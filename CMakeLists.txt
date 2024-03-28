@@ -41,6 +41,8 @@ include(GenerateExportHeader)
 include(CTest)
 include(FetchContent)
 
+message(STATUS "DESTDIR is '${DESTDIR}'")
+
 # When building with ninja-multiconfig, build both debug and release by default
 if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
 	set(CMAKE_CROSS_CONFIGS "Debug;Release")
@@ -121,7 +123,7 @@ if(WIN32)
 		add_definitions(-D _WIN32_WINNT=0x0501)
 	endif()
 
-	# Man, this is 2024 we're living in... 
+	# Man, this is 2024 we're living in...
 	add_definitions(-DNOMINMAX)
 
 	# We do not want to write an export file for all our symbols...
@@ -219,6 +221,7 @@ if(MSVC)
 endif()
 
 find_package(ZLIB QUIET)
+
 if(NOT ZLIB_FOUND)
 	message(FATAL_ERROR "The zlib development files were not found you this system, please install them and try again (hint: on debian/ubuntu use apt-get install zlib1g-dev)")
 endif()
@@ -496,15 +499,7 @@ if(PROJECT_IS_TOP_LEVEL OR BUILD_FOR_CCP4)
 			FILES ${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ddl.dic
 			${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_pdbx.dic
 			${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ma.dic ${COMPONENTS_CIF}
-			DESTINATION ${CIFPP_DATA_DIR})
-	endif()
-
-	if(CIFPP_CACHE_DIR AND CIFPP_DOWNLOAD_CCD)
-		install(
-			FILES ${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ddl.dic
-			${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_pdbx.dic
-			${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ma.dic ${COMPONENTS_CIF}
-			DESTINATION ${CIFPP_CACHE_DIR})
+			DESTINATION ${CMAKE_INSTALL_DATADIR}/libcifpp)
 	endif()
 
 	set(CONFIG_TEMPLATE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cifpp-config.cmake.in)
@@ -545,49 +540,36 @@ endif()
 
 # Optionally install the update scripts for CCD and dictionary files
 if(CIFPP_INSTALL_UPDATE_SCRIPT)
-	if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR ${CMAKE_SYSTEM_NAME} STREQUAL
-		"GNU")
-		if("${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr/local")
-			set(CIFPP_CRON_DIR
-				"/etc/cron.weekly"
-				CACHE PATH "The cron directory, for the update script")
-		else()
-			set(CIFPP_CRON_DIR
-				"${CIFPP_ETC_DIR}/cron.weekly"
-				CACHE PATH "The cron directory, for the update script")
-		endif()
-	elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
-		set(CIFPP_CRON_DIR
-			"${CIFPP_ETC_DIR}/periodic/weekly"
-			CACHE PATH "The cron directory, for the update script")
+	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tools/update-libcifpp-data.in
+		update-libcifpp-data @ONLY)
+
+	if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
+		${CMAKE_SYSTEM_NAME} STREQUAL "GNU" OR
+		${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+		install(
+			FILES ${CMAKE_CURRENT_BINARY_DIR}/update-libcifpp-data
+			DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/cron.weekly
+			PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE
+			WORLD_READ)
 	else()
 		message(FATAL_ERROR "Don't know where to install the update script")
 	endif()
 
-	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tools/update-libcifpp-data.in
-		update-libcifpp-data @ONLY)
-	install(
-		FILES ${CMAKE_CURRENT_BINARY_DIR}/update-libcifpp-data
-		DESTINATION ${CIFPP_CRON_DIR}
-		PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE
-		WORLD_READ)
-
-	install(DIRECTORY DESTINATION ${CIFPP_CACHE_DIR})
-
 	# a config file, to make it complete
-	if(NOT EXISTS "${CIFPP_ETC_DIR}/libcifpp.conf")
+	# install(DIRECTORY DESTINATION "${CMAKE_INSTALL_LOCALSTATEDIR}/libcifpp")
+	if(NOT EXISTS "${CMAKE_INSTALL_SYSCONFDIR}/libcifpp.conf")
 		file(
 			WRITE ${CMAKE_CURRENT_BINARY_DIR}/libcifpp.conf
 			[[# Uncomment the next line to enable automatic updates
 # update=true
 ]])
 		install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libcifpp.conf
-			DESTINATION "${CIFPP_ETC_DIR}")
+			DESTINATION ${CMAKE_INSTALL_SYSCONFDIR})
 		install(
 			CODE "message(\"A configuration file has been written to ${CIFPP_ETC_DIR}/libcifpp.conf, please edit this file to enable automatic updates\")"
 		)
 
-		install(DIRECTORY DESTINATION "${CIFPP_ETC_DIR}/libcifpp/cache-update.d")
+		install(DIRECTORY DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/libcifpp/cache-update.d)
 	endif()
 
 	target_compile_definitions(cifpp PUBLIC CACHE_DIR="${CIFPP_CACHE_DIR}")
