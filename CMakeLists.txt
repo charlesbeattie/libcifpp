@@ -27,7 +27,7 @@ cmake_minimum_required(VERSION 3.23)
 # set the project name
 project(
 	libcifpp
-	VERSION 7.0.4
+	VERSION 7.0.5
 	LANGUAGES CXX)
 
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -331,7 +331,7 @@ set(project_headers
 	include/cif++/validate.hpp
 )
 
-add_library(cifpp STATIC)
+add_library(cifpp)
 add_library(cifpp::cifpp ALIAS cifpp)
 
 target_sources(cifpp
@@ -494,11 +494,14 @@ if(PROJECT_IS_TOP_LEVEL OR BUILD_FOR_CCP4)
 		FILE "cifpp-targets.cmake"
 		DESTINATION lib/cmake/cifpp)
 
+	install(
+		FILES ${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ddl.dic
+		${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_pdbx.dic
+		${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ma.dic
+		DESTINATION ${CMAKE_INSTALL_DATADIR}/libcifpp)
+
 	if(CIFPP_DATA_DIR AND CIFPP_DOWNLOAD_CCD)
-		install(
-			FILES ${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ddl.dic
-			${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_pdbx.dic
-			${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ma.dic ${COMPONENTS_CIF}
+		install(FILES  ${COMPONENTS_CIF}
 			DESTINATION ${CMAKE_INSTALL_DATADIR}/libcifpp)
 	endif()
 
