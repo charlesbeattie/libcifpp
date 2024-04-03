@@ -34,11 +34,11 @@
 
 // --------------------------------------------------------------------
 
-cif::file operator""_cf(const char *text, size_t length)
+cif::file operator""_cf(const char *text, std::size_t length)
 {
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -240,7 +240,7 @@ TEST_CASE("r_2")
 {
 	cif::category c("foo");
 
-	for (size_t i = 1; i < 256; ++i)
+	for (std::size_t i = 1; i < 256; ++i)
 	{
 		c.emplace({ { "id", i },
 			{ "txt", std::string(i, 'x') } });
@@ -537,7 +537,7 @@ _test.value
 	REQUIRE(not t.empty());
 	REQUIRE(t.front()["name"].as<std::string>() == "aap");
 
-	auto t2 = test.find(cif::key("value") == 1.2f);
+	auto t2 = test.find(cif::key("value") == 1.2);
 	REQUIRE(not t2.empty());
 	REQUIRE(t2.front()["name"].as<std::string>() == "mies");
 }
@@ -568,6 +568,28 @@ _test.value
 
 	REQUIRE(test.contains("value"_key == cif::null));
 	REQUIRE(test.find("value"_key == cif::null).size() == 2);
+}
+
+// --------------------------------------------------------------------
+
+TEST_CASE("compare-with-float")
+{
+	auto f = R"(data_TEST
+#
+loop_
+_test.id
+_test.value
+1 1.0
+2 2.0
+3 3.0
+4 ?
+5 .
+    )"_cf;
+
+	auto &db = f.front();
+	auto &cat = db["test"];
+
+	CHECK(cat.find_first<int>(cif::key("value") == 1.0, "id") == 1);
 }
 
 // --------------------------------------------------------------------
@@ -700,7 +722,7 @@ save__cat_2.desc
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -735,7 +757,7 @@ _cat_2.desc
 
 	struct data_membuf : public std::streambuf
 	{
-		data_membuf(char *text, size_t length)
+		data_membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -853,7 +875,7 @@ save__cat_1.c
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -880,7 +902,7 @@ mies Mies
 
 	struct data_membuf : public std::streambuf
 	{
-		data_membuf(char *text, size_t length)
+		data_membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -1015,7 +1037,7 @@ save__cat_2.desc
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -1053,7 +1075,7 @@ _cat_2.desc
 
 	struct data_membuf : public std::streambuf
 	{
-		data_membuf(char *text, size_t length)
+		data_membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -1218,7 +1240,7 @@ save__cat_2.parent_id3
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -1266,7 +1288,7 @@ _cat_2.parent_id3
 
 	struct data_membuf : public std::streambuf
 	{
-		data_membuf(char *text, size_t length)
+		data_membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -1439,7 +1461,7 @@ cat_2 3 cat_2:cat_1:3
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -1480,7 +1502,7 @@ _cat_2.parent_id3
 
 	struct data_membuf : public std::streambuf
 	{
-		data_membuf(char *text, size_t length)
+		data_membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -1679,7 +1701,7 @@ cat_2 1 cat_2:cat_1:1
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -1720,7 +1742,7 @@ _cat_2.parent_id_2
 
 	struct data_membuf : public std::streambuf
 	{
-		data_membuf(char *text, size_t length)
+		data_membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -2075,7 +2097,7 @@ cat_2 1 '_cat_2.num'  '_cat_3.num'  cat_3
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -2121,7 +2143,7 @@ _cat_3.num
 
 	struct data_membuf : public std::streambuf
 	{
-		data_membuf(char *text, size_t length)
+		data_membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -2360,7 +2382,7 @@ cat_2 1 '_cat_2.num'  '_cat_3.num'  cat_3
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -2406,7 +2428,7 @@ _cat_3.num
 
 	struct data_membuf : public std::streambuf
 	{
-		data_membuf(char *text, size_t length)
+		data_membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -2567,11 +2589,11 @@ _cat_3.num
 // 				bonded.insert({atom_id_1, atom_id_2});
 // 		}
 
-// 		for (size_t i = 0; i + 1 < atoms.size(); ++i)
+// 		for (std::size_t i = 0; i + 1 < atoms.size(); ++i)
 // 		{
 // 			auto label_i = atoms[i].labelAtomID();
 
-// 			for (size_t j = i + 1; j < atoms.size(); ++j)
+// 			for (std::size_t j = i + 1; j < atoms.size(); ++j)
 // 			{
 // 				auto label_j = atoms[j].labelAtomID();
 
@@ -2592,7 +2614,7 @@ _cat_3.num
 
 // 	auto &poly = structure.polymers().front();
 
-// 	for (size_t i = 0; i + 1 < poly.size(); ++i)
+// 	for (std::size_t i = 0; i + 1 < poly.size(); ++i)
 // 	{
 // 		auto C = poly[i].atomByID("C");
 // 		auto N = poly[i + 1].atomByID("N");
@@ -2694,7 +2716,7 @@ boo.data_.whatever
 
 	REQUIRE(test1.size() == sizeof(kS) / sizeof(T));
 
-	size_t i = 0;
+	std::size_t i = 0;
 	for (auto r : test1)
 	{
 		auto text = r.get<std::string>("text");
@@ -2750,7 +2772,7 @@ There it was!)",
 
 	REQUIRE(test1.size() == sizeof(kS) / sizeof(T));
 
-	size_t i = 0;
+	std::size_t i = 0;
 	for (auto r : test1)
 	{
 		auto text = r.get<std::string>("text");
@@ -2957,7 +2979,7 @@ save__cat_1.name
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -2984,7 +3006,7 @@ _cat_1.name
 
 	struct data_membuf : public std::streambuf
 	{
-		data_membuf(char *text, size_t length)
+		data_membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -3152,7 +3174,7 @@ save__cat_1.name
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -3183,7 +3205,7 @@ _cat_1.name
 
 	struct data_membuf : public std::streambuf
 	{
-		data_membuf(char *text, size_t length)
+		data_membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -3259,7 +3281,7 @@ save__cat_1.id_2
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -3288,7 +3310,7 @@ _cat_1.id_2
 
 	struct data_membuf : public std::streambuf
 	{
-		data_membuf(char *text, size_t length)
+		data_membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -3472,7 +3494,7 @@ ATOM      7  CD  PRO A   1      15.762  13.216  43.724  1.00 30.71           C)"
 
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}

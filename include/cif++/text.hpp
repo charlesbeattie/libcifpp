@@ -352,7 +352,7 @@ std::string cif_id_for_number(int number);
  * a dynamic programming approach to get the most efficient filling of
  * the space.
  */
-std::vector<std::string> word_wrap(const std::string &text, size_t width);
+std::vector<std::string> word_wrap(const std::string &text, std::size_t width);
 
 // --------------------------------------------------------------------
 /// \brief std::from_chars for floating point types.

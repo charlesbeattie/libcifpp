@@ -200,7 +200,7 @@ enum class radius_type
 };
 
 /// @brief The number of radii per element which can be requested from atom_type_info
-constexpr size_t kRadiusTypeCount = static_cast<size_t>(radius_type::type_count);
+constexpr std::size_t kRadiusTypeCount = static_cast<std::size_t>(radius_type::type_count);
 
 /// An enum used to select either the effective or the crystal radius of an ion.
 /// See explanation on Wikipedia: https://en.wikipedia.org/wiki/Ionic_radius
@@ -276,7 +276,7 @@ class atom_type_traits
 	{
 		if (type >= radius_type::type_count)
 			throw std::invalid_argument("invalid radius requested");
-		return m_info->radii[static_cast<size_t>(type)] / 100.f;
+		return m_info->radii[static_cast<std::size_t>(type)] / 100.f;
 	}
 
 	/// \brief Return the radius for a charged version of this atom in a solid crystal

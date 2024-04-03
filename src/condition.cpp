@@ -76,6 +76,20 @@ namespace detail
 		return this;
 	}
 
+	condition_impl *key_equals_number_condition_impl::prepare(const category &c)
+	{
+		m_item_ix = c.get_item_ix(m_item_name);
+
+		if (c.get_cat_validator() != nullptr and
+			c.key_item_indices().contains(m_item_ix) and
+			c.key_item_indices().size() == 1)
+		{
+			m_single_hit = c[{ { m_item_name, m_value } }];
+		}
+
+		return this;
+	}
+
 	bool found_in_range(condition_impl *c, std::vector<and_condition_impl *>::iterator b, std::vector<and_condition_impl *>::iterator e)
 	{
 		bool result = true;

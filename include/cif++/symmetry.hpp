@@ -300,7 +300,7 @@ namespace literals
 	 * @endcode
 	 *
 	 */
-	inline sym_op operator""_symop(const char *text, size_t length)
+	inline sym_op operator""_symop(const char *text, std::size_t length)
 	{
 		return sym_op({ text, length });
 	}
@@ -464,7 +464,7 @@ class spacegroup : public std::vector<transformation>
 
   private:
 	int m_nr;
-	size_t m_index;
+	std::size_t m_index;
 };
 
 // --------------------------------------------------------------------

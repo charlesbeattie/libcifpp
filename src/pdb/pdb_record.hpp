@@ -40,24 +40,24 @@ struct PDBRecord
 	PDBRecord *mNext;
 	uint32_t mLineNr;
 	char mName[11];
-	size_t mVlen;
+	std::size_t mVlen;
 	char mValue[1];
 
 	PDBRecord(uint32_t lineNr, const std::string &name, const std::string &value);
 	~PDBRecord();
 
-	void *operator new(size_t);
-	void *operator new(size_t size, size_t vLen);
+	void *operator new(std::size_t);
+	void *operator new(std::size_t size, std::size_t vLen);
 
 	void operator delete(void *p);
-	void operator delete(void *p, size_t vLen);
+	void operator delete(void *p, std::size_t vLen);
 
 	bool is(const char *name) const;
 
-	char vC(size_t column);
-	std::string vS(size_t columnFirst, size_t columnLast = std::numeric_limits<size_t>::max());
+	char vC(std::size_t column);
+	std::string vS(std::size_t columnFirst, std::size_t columnLast = std::numeric_limits<std::size_t>::max());
 	int vI(int columnFirst, int columnLast);
-	std::string vF(size_t columnFirst, size_t columnLast);
+	std::string vF(std::size_t columnFirst, std::size_t columnLast);
 };
 
 } // namespace pdbx

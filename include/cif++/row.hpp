@@ -85,7 +85,7 @@ namespace detail
 	template <typename... C>
 	struct get_row_result
 	{
-		static constexpr size_t N = sizeof...(C);
+		static constexpr std::size_t N = sizeof...(C);
 
 		get_row_result(const row_handle &r, std::array<uint16_t, N> &&items)
 			: m_row(r)
@@ -104,7 +104,7 @@ namespace detail
 			return get<Ts...>(std::index_sequence_for<Ts...>{});
 		}
 
-		template <typename... Ts, size_t... Is>
+		template <typename... Ts, std::size_t... Is>
 		std::tuple<Ts...> get(std::index_sequence<Is...>) const
 		{
 			return std::tuple<Ts...>{ m_row[m_items[Is]].template as<Ts>()... };

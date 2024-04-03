@@ -48,7 +48,7 @@ condition get_parents_condition(const validator &validator, row_handle rh, const
 		{
 			condition cond;
 
-			for (size_t ix = 0; ix < link->m_child_keys.size(); ++ix)
+			for (std::size_t ix = 0; ix < link->m_child_keys.size(); ++ix)
 			{
 				auto childValue = rh[link->m_child_keys[ix]];
 

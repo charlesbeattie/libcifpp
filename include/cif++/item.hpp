@@ -238,10 +238,10 @@ class item
 	bool is_unknown() const { return m_value == "?"; }
 
 	/// \brief the length of the value string
-	size_t length() const { return m_value.length(); }
+	std::size_t length() const { return m_value.length(); }
 
 	/// \brief support for structured binding
-	template <size_t N>
+	template <std::size_t N>
 	decltype(auto) get() const
 	{
 		if constexpr (N == 0)
@@ -319,7 +319,7 @@ struct item_value
 		return m_length != 0;
 	}
 
-	size_t m_length = 0; ///< Length of the data
+	std::size_t m_length = 0; ///< Length of the data
 	union
 	{
 		char m_local_data[8]; ///< Storage area for small strings (strings smaller than kBufferSize)
@@ -328,7 +328,7 @@ struct item_value
 	};
 
 	/** The maximum length of locally stored strings */
-	static constexpr size_t kBufferSize = sizeof(m_local_data);
+	static constexpr std::size_t kBufferSize = sizeof(m_local_data);
 
 	// By using std::string_view instead of c_str we obain a
 	// nice performance gain since we avoid many calls to strlen.
@@ -389,7 +389,7 @@ struct item_handle
 	 * @param value The value
 	 * @return reference to this item_handle
 	 */
-	template <size_t N>
+	template <std::size_t N>
 	item_handle &operator=(const char (&value)[N])
 	{
 		assign_value(item{ "", std::move(value) }.value());
@@ -662,7 +662,7 @@ struct item_handle::item_value_as<T, std::enable_if_t<std::is_same_v<T, bool>>>
 	}
 };
 
-template <size_t N>
+template <std::size_t N>
 struct item_handle::item_value_as<char[N]>
 {
 	static std::string convert(const item_handle &ref)

@@ -867,7 +867,7 @@ class spherical_dots
 	}
 
 	/// \brief The number of points
-	size_t size() const { return P; }
+	std::size_t size() const { return P; }
 
 	/// \brief Access a point by index
 	const point operator[](uint32_t inIx) const { return m_points[inIx]; }

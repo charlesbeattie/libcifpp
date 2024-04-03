@@ -608,9 +608,9 @@ compound *local_compound_factory_impl::construct_compound(const datablock &rdb, 
 
 	float formula_weight = 0;
 	int formal_charge = 0;
-	std::map<std::string,size_t> formula_data;
+	std::map<std::string,std::size_t> formula_data;
 
-	for (size_t ord = 1; const auto &[atom_id, type_symbol, type, charge, x, y, z] :
+	for (std::size_t ord = 1; const auto &[atom_id, type_symbol, type, charge, x, y, z] :
 		rdb["chem_comp_atom"].rows<std::string, std::string, std::string, int, float, float, float>(
 			"atom_id", "type_symbol", "type", "charge", "x", "y", "z"))
 	{
@@ -633,7 +633,7 @@ compound *local_compound_factory_impl::construct_compound(const datablock &rdb, 
 		formal_charge += charge;
 	}
 
-	for (size_t ord = 1; const auto &[atom_id_1, atom_id_2, type, aromatic] :
+	for (std::size_t ord = 1; const auto &[atom_id_1, atom_id_2, type, aromatic] :
 		rdb["chem_comp_bond"].rows<std::string, std::string, std::string, bool>("atom_id_1", "atom_id_2", "type", "aromatic"))
 	{
 		std::string value_order("SING");

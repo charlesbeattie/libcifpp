@@ -308,17 +308,17 @@ class dictionary_parser : public parser
 
 		using key_type = std::tuple<std::string, std::string, int>;
 
-		std::map<key_type, size_t> linkIndex;
+		std::map<key_type, std::size_t> linkIndex;
 
 		// Each link group consists of a set of keys
 		std::vector<std::tuple<std::vector<std::string>, std::vector<std::string>>> linkKeys;
 
-		auto addLink = [&](size_t ix, const std::string &pk, const std::string &ck)
+		auto addLink = [&](std::size_t ix, const std::string &pk, const std::string &ck)
 		{
 			auto &&[pkeys, ckeys] = linkKeys.at(ix);
 
 			bool found = false;
-			for (size_t i = 0; i < pkeys.size(); ++i)
+			for (std::size_t i = 0; i < pkeys.size(); ++i)
 			{
 				if (pkeys[i] == pk and ckeys[i] == ck)
 				{
@@ -357,7 +357,7 @@ class dictionary_parser : public parser
 				linkKeys.push_back({});
 			}
 
-			size_t ix = linkIndex.at(key);
+			std::size_t ix = linkIndex.at(key);
 			addLink(ix, piv->m_item_name, civ->m_item_name);
 		}
 
@@ -385,7 +385,7 @@ class dictionary_parser : public parser
 					linkKeys.push_back({});
 				}
 
-				size_t ix = linkIndex.at(key);
+				std::size_t ix = linkIndex.at(key);
 				addLink(ix, piv->m_item_name, civ->m_item_name);
 			}
 		}

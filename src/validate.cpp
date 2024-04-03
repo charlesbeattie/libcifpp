@@ -353,7 +353,7 @@ void validator::add_link_validator(link_validator &&v)
 	if (ccv == nullptr)
 		throw std::runtime_error("unknown child category " + v.m_child_category);
 
-	for (size_t i = 0; i < v.m_parent_keys.size(); ++i)
+	for (std::size_t i = 0; i < v.m_parent_keys.size(); ++i)
 	{
 		auto piv = pcv->get_validator_for_item(v.m_parent_keys[i]);
 

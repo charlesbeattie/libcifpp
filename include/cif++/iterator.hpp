@@ -67,7 +67,7 @@ class iterator_impl
 	/** @endcond */
 
 	/** variable that contains the number of elements in the tuple */
-	static constexpr size_t N = sizeof...(Ts);
+	static constexpr std::size_t N = sizeof...(Ts);
 
 	/** @cond */
 	using category_type = std::remove_cv_t<Category>;
@@ -176,7 +176,7 @@ class iterator_impl
 	/** @endcond */
 
   private:
-	template <size_t... Is>
+	template <std::size_t... Is>
 	tuple_type get(std::index_sequence<Is...>) const
 	{
 		return m_current ? tuple_type{ m_current[m_item_ix[Is]].template as<Ts>()... } : tuple_type{};
@@ -450,7 +450,7 @@ class iterator_proxy
 {
   public:
 	/** @cond */
-	static constexpr const size_t N = sizeof...(Ts);
+	static constexpr const std::size_t N = sizeof...(Ts);
 
 	using category_type = Category;
 	using row_type = std::conditional_t<std::is_const_v<category_type>, const row, row>;
@@ -473,7 +473,7 @@ class iterator_proxy
 
 	bool empty() const { return m_begin == m_end; }               ///< Return true if the range is empty
 	explicit operator bool() const { return not empty(); }        ///< Easy way to detect if the range is empty
-	size_t size() const { return std::distance(begin(), end()); } ///< Return size of the range
+	std::size_t size() const { return std::distance(begin(), end()); } ///< Return size of the range
 
 	// row front() { return *begin(); }
 	// row back() { return *(std::prev(end())); }
@@ -512,7 +512,7 @@ class conditional_iterator_proxy
 {
   public:
 	/** @cond */
-	static constexpr const size_t N = sizeof...(Ts);
+	static constexpr const std::size_t N = sizeof...(Ts);
 
 	using category_type = std::remove_cv_t<CategoryType>;
 
@@ -606,7 +606,7 @@ class conditional_iterator_proxy
 
 	bool empty() const;                                           ///< Return true if the range is empty
 	explicit operator bool() const { return not empty(); }        ///< Easy way to detect if the range is empty
-	size_t size() const { return std::distance(begin(), end()); } ///< Return size of the range
+	std::size_t size() const { return std::distance(begin(), end()); } ///< Return size of the range
 
 	row_handle front() { return *begin(); } ///< Return reference to the first row
 	// row_handle back() { return *begin(); }

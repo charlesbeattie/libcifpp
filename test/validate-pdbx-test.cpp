@@ -32,11 +32,11 @@
 
 // --------------------------------------------------------------------
 
-cif::file operator""_cf(const char *text, size_t length)
+cif::file operator""_cf(const char *text, std::size_t length)
 {
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}

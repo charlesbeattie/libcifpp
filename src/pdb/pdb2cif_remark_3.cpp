@@ -980,8 +980,8 @@ std::string Remark3Parser::nextLine()
 
 	while (mRec != nullptr and mRec->is("REMARK   3"))
 	{
-		size_t valueIndent = 0;
-		for (size_t i = 4; i < mRec->mVlen; ++i)
+		std::size_t valueIndent = 0;
+		for (std::size_t i = 4; i < mRec->mVlen; ++i)
 		{
 			if (mRec->mValue[i] == ' ')
 				continue;
@@ -1232,7 +1232,7 @@ void Remark3Parser::storeCapture(const char *category, std::initializer_list<con
 			}
 			//			else if (iequals(category, "struct_ncs_dom"))
 			//			{
-			//				size_t id = cat.size() + 1;
+			//				std::size_t id = cat.size() + 1;
 			//
 			//				cat.emplace({
 			//					{ "id", id }

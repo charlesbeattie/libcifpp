@@ -85,11 +85,11 @@ class file : public std::list<datablock>
 	 * @param data The pointer to the character string with data to load
 	 * @param length The length of the data
 	 */
-	explicit file(const char *data, size_t length)
+	explicit file(const char *data, std::size_t length)
 	{
 		struct membuf : public std::streambuf
 		{
-			membuf(char *text, size_t length)
+			membuf(char *text, std::size_t length)
 			{
 				this->setg(text, text, text + length);
 			}

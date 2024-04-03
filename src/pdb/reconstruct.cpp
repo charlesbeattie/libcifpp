@@ -211,11 +211,11 @@ void createEntityIDs(datablock &db)
 		lastSeqID = seq_id;
 	}
 
-	std::map<size_t, std::string> entity_ids;
+	std::map<std::size_t, std::string> entity_ids;
 
 	atom_site.add_item("label_entity_id");
 
-	for (size_t i = 0; i < entities.size(); ++i)
+	for (std::size_t i = 0; i < entities.size(); ++i)
 	{
 		if (entity_ids.contains(i))
 			continue;
@@ -223,14 +223,14 @@ void createEntityIDs(datablock &db)
 		auto entity_id = std::to_string(i + 1);
 		entity_ids[i] = entity_id;
 
-		for (size_t j = i + 1; j < entities.size(); ++j)
+		for (std::size_t j = i + 1; j < entities.size(); ++j)
 		{
 			if (entities[i] == entities[j])
 				entity_ids[j] = entity_id;
 		}
 	}
 
-	for (size_t ix = 0; auto &e : entities)
+	for (std::size_t ix = 0; auto &e : entities)
 	{
 		auto k = e.front();
 		const auto &entity_id = entity_ids[ix++];
@@ -1138,7 +1138,7 @@ bool reconstruct_pdbx(file &file, std::string_view dictionary)
 				              iv->m_type != nullptr and
 				              iv->m_type->m_primitive_type == cif::DDL_PrimitiveType::Numb;
 
-				for (size_t ix = 0; auto row : cat)
+				for (std::size_t ix = 0; auto row : cat)
 				{
 					if (number)
 						row.assign(key, std::to_string(++ix), false, false);

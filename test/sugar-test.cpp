@@ -32,11 +32,11 @@
 
 // --------------------------------------------------------------------
 
-cif::file operator""_cf(const char* text, size_t length)
+cif::file operator""_cf(const char* text, std::size_t length)
 {
     struct membuf : public std::streambuf
     {
-        membuf(char* text, size_t length)
+        membuf(char* text, std::size_t length)
         {
             this->setg(text, text, text + length);
         }
@@ -131,7 +131,7 @@ TEST_CASE("sugar_name_1")
 // 	auto &db = s.get_datablock();
 // 	auto &as = db["atom_site"];
 
-// 	for (size_t i = 0; i < 2; ++i)
+// 	for (std::size_t i = 0; i < 2; ++i)
 // 	{
 // 		for (auto r : as.find("label_asym_id"_key == "H" and "auth_seq_id"_key == i + 1))
 // 			/*auto &ri = */ai[i].emplace_back(r);

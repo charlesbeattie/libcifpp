@@ -215,7 +215,7 @@ const char* kSpinner[] = {
 	 ".", "o", "O", "0", "@", "*", " "
 };
 
-const size_t kSpinnerCount = sizeof(kSpinner) / sizeof(char*);
+const std::size_t kSpinnerCount = sizeof(kSpinner) / sizeof(char*);
 
 const int kSpinnerTimeInterval = 100;
 

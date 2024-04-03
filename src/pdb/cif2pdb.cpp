@@ -182,7 +182,7 @@ std::vector<std::string> MapAsymIDs2ChainIDs(const std::vector<std::string> &asy
 }
 
 // support for wrapping text using a 'continuation marker'
-size_t WriteContinuedLine(std::ostream &pdbFile, std::string header, int &count, int cLen, std::string text, std::string::size_type lStart = 0)
+std::size_t WriteContinuedLine(std::ostream &pdbFile, std::string header, int &count, int cLen, std::string text, std::string::size_type lStart = 0)
 {
 	if (lStart == 0)
 	{
@@ -217,15 +217,15 @@ size_t WriteContinuedLine(std::ostream &pdbFile, std::string header, int &count,
 	return lines.size();
 }
 
-size_t WriteOneContinuedLine(std::ostream &pdbFile, std::string header, int cLen, std::string line, int lStart = 0)
+std::size_t WriteOneContinuedLine(std::ostream &pdbFile, std::string header, int cLen, std::string line, int lStart = 0)
 {
 	int count = 0;
 	return WriteContinuedLine(pdbFile, header, count, cLen, line, lStart);
 }
 
-size_t WriteCitation(std::ostream &pdbFile, const datablock &db, row_handle r, int reference)
+std::size_t WriteCitation(std::ostream &pdbFile, const datablock &db, row_handle r, int reference)
 {
-	size_t result = 0;
+	std::size_t result = 0;
 
 	std::string s1;
 
@@ -560,7 +560,7 @@ void WriteTitle(std::ostream &pdbFile, const datablock &db)
 			std::string cs = ++continuation > 1 ? std::to_string(continuation) : std::string();
 
 			pdbFile << cif::format(kRevDatFmt, revNum, cs, date, db.name(), modType);
-			for (size_t i = 0; i < 4; ++i)
+			for (std::size_t i = 0; i < 4; ++i)
 				pdbFile << cif::format(" %-6.6s", (i < types.size() ? types[i] : std::string()));
 			pdbFile << '\n';
 
@@ -748,7 +748,7 @@ class Fs : public FBase
 	virtual void out(std::ostream &os)
 	{
 		std::string s{ text() };
-		size_t width = os.width();
+		std::size_t width = os.width();
 
 		if (s.empty())
 		{
@@ -2368,7 +2368,7 @@ void WriteRemark280(std::ostream &pdbFile, const datablock &db)
 
 			const char *keys[] = { "pdbx_details", "ph", "method", "temp" };
 
-			for (size_t i = 0; i < (sizeof(keys) / sizeof(const char *)); ++i)
+			for (std::size_t i = 0; i < (sizeof(keys) / sizeof(const char *)); ++i)
 			{
 				const char *c = keys[i];
 
@@ -2634,7 +2634,7 @@ void WriteRemark470(std::ostream &pdbFile, const datablock &db)
 			{
 				pdbFile << cif::format("REMARK 470 %3.3s %3.3s %1.1s%4d%1.1s  ", modelNr, resName, chainID, seqNr, iCode) << "  ";
 
-				for (size_t i = 0; i < 6 and not a.second.empty(); ++i)
+				for (std::size_t i = 0; i < 6 and not a.second.empty(); ++i)
 				{
 					pdbFile << cif2pdbAtomName(a.second.front(), resName, db) << ' ';
 					a.second.pop_front();
@@ -3284,7 +3284,7 @@ int WriteMiscellaneousFeatures(std::ostream &pdbFile, const datablock &db)
 		std::string siteID = std::get<0>(s);
 		std::deque<std::string> &res = std::get<1>(s);
 
-		size_t numRes = res.size();
+		std::size_t numRes = res.size();
 
 		int nr = 1;
 		while (res.empty() == false)

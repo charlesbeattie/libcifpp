@@ -128,7 +128,7 @@ std::string sym_op::string() const
 	*r.ptr++ = '0' + m_tc;
 	*r.ptr = 0;
 
-	return { b, static_cast<size_t>(r.ptr - b) };
+	return { b, static_cast<std::size_t>(r.ptr - b) };
 }
 
 // --------------------------------------------------------------------
@@ -184,7 +184,7 @@ void transformation::try_create_quaternion()
 
 	auto ev = es.eigenvalues();
 
-	for (size_t j = 0; j < 4; ++j)
+	for (std::size_t j = 0; j < 4; ++j)
 	{
 		if (std::abs(ev[j].real() - 1) > 0.01)
 			continue;
@@ -221,7 +221,7 @@ transformation inverse(const transformation &t)
 spacegroup::spacegroup(int nr)
 	: m_nr(nr)
 {
-	const size_t N = kSymopNrTableSize;
+	const std::size_t N = kSymopNrTableSize;
 	int32_t L = 0, R = static_cast<int32_t>(N - 1);
 	while (L <= R)
 	{
@@ -234,7 +234,7 @@ spacegroup::spacegroup(int nr)
 
 	m_index = L;
 
-	for (size_t i = L; i < N and kSymopNrTable[i].spacegroup() == m_nr; ++i)
+	for (std::size_t i = L; i < N and kSymopNrTable[i].spacegroup() == m_nr; ++i)
 		emplace_back(kSymopNrTable[i].symop().data());
 }
 
@@ -343,7 +343,7 @@ int get_space_group_number(std::string_view spacegroup)
 
 	int result = 0;
 
-	const size_t N = kNrOfSpaceGroups;
+	const std::size_t N = kNrOfSpaceGroups;
 	int32_t L = 0, R = static_cast<int32_t>(N - 1);
 	while (L <= R)
 	{
@@ -365,7 +365,7 @@ int get_space_group_number(std::string_view spacegroup)
 	// not found, see if we can find a match based on xHM name
 	if (result == 0)
 	{
-		for (size_t i = 0; i < kNrOfSpaceGroups; ++i)
+		for (std::size_t i = 0; i < kNrOfSpaceGroups; ++i)
 		{
 			auto &sp = kSpaceGroups[i];
 			if (sp.xHM == spacegroup)
@@ -395,7 +395,7 @@ int get_space_group_number(std::string_view spacegroup, space_group_name type)
 
 	if (type == space_group_name::full)
 	{
-		const size_t N = kNrOfSpaceGroups;
+		const std::size_t N = kNrOfSpaceGroups;
 		int32_t L = 0, R = static_cast<int32_t>(N - 1);
 		while (L <= R)
 		{
@@ -475,7 +475,7 @@ std::tuple<float,point,sym_op> crystal::closest_symmetry_copy(point a, point b) 
 
 	a = orthogonal(fa, m_cell);
 
-	for (size_t i = 0; i < m_spacegroup.size(); ++i)
+	for (std::size_t i = 0; i < m_spacegroup.size(); ++i)
 	{
 		sym_op s(static_cast<uint8_t>(i + 1));
 		auto &t = m_spacegroup[i];

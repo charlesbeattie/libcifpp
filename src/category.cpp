@@ -164,7 +164,7 @@ class category_index
 		return result;
 	}
 
-	size_t size() const;
+	std::size_t size() const;
 	//	bool isValid() const;
 
   private:
@@ -475,12 +475,12 @@ category_index::entry *category_index::erase(category &cat, entry *h, row *k)
 	return fix_up(h);
 }
 
-size_t category_index::size() const
+std::size_t category_index::size() const
 {
 	std::stack<entry *> s;
 	s.push(m_root);
 
-	size_t result = 0;
+	std::size_t result = 0;
 
 	while (not s.empty())
 	{
@@ -544,7 +544,7 @@ category::~category()
 
 void category::remove_item(std::string_view item_name)
 {
-	for (size_t ix = 0; ix < m_items.size(); ++ix)
+	for (std::size_t ix = 0; ix < m_items.size(); ++ix)
 	{
 		if (not iequals(item_name, m_items[ix].m_name))
 			continue;
@@ -563,7 +563,7 @@ void category::remove_item(std::string_view item_name)
 
 void category::rename_item(std::string_view from_name, std::string_view to_name)
 {
-	for (size_t ix = 0; ix < m_items.size(); ++ix)
+	for (std::size_t ix = 0; ix < m_items.size(); ++ix)
 	{
 		if (not iequals(from_name, m_items[ix].m_name))
 			continue;
@@ -832,7 +832,7 @@ bool category::validate_links() const
 		if (name() == "atom_site" and (parent->name() == "pdbx_poly_seq_scheme" or parent->name() == "entity_poly_seq"))
 			continue;
 
-		size_t missing = 0;
+		std::size_t missing = 0;
 		category first_missing_rows(name());
 
 		for (auto r : *this)
@@ -909,7 +909,7 @@ condition category::get_parents_condition(row_handle rh, const category &parentC
 		{
 			condition cond;
 
-			for (size_t ix = 0; ix < link->m_child_keys.size(); ++ix)
+			for (std::size_t ix = 0; ix < link->m_child_keys.size(); ++ix)
 			{
 				auto childValue = rh[link->m_child_keys[ix]];
 
@@ -951,7 +951,7 @@ condition category::get_children_condition(row_handle rh, const category &childC
 		{
 			condition cond;
 
-			for (size_t ix = 0; ix < link->m_parent_keys.size(); ++ix)
+			for (std::size_t ix = 0; ix < link->m_parent_keys.size(); ++ix)
 			{
 				auto childKey = link->m_child_keys[ix];
 				auto parentKey = link->m_parent_keys[ix];
@@ -1127,14 +1127,14 @@ class save_value
 	const T m_sv;
 };
 
-size_t category::erase(condition &&cond)
+std::size_t category::erase(condition &&cond)
 {
 	return erase(std::move(cond), {});
 }
 
-size_t category::erase(condition &&cond, std::function<void(row_handle)> &&visit)
+std::size_t category::erase(condition &&cond, std::function<void(row_handle)> &&visit)
 {
-	size_t result = 0;
+	std::size_t result = 0;
 
 	cond.prepare(*this);
 
@@ -1274,7 +1274,7 @@ std::string category::get_unique_value(std::string_view item_name)
 	if (result.empty())
 	{
 		// brain-dead implementation
-		for (size_t ix = 0; ix < size(); ++ix)
+		for (std::size_t ix = 0; ix < size(); ++ix)
 		{
 			// result = m_name + "-" + std::to_string(ix);
 			result = cif_id_for_number(ix);
@@ -1331,7 +1331,7 @@ void category::update_value(const std::vector<row_handle> &rows, std::string_vie
 			condition cond;
 			std::string childItemName;
 
-			for (size_t ix = 0; ix < linked->m_parent_keys.size(); ++ix)
+			for (std::size_t ix = 0; ix < linked->m_parent_keys.size(); ++ix)
 			{
 				std::string pk = linked->m_parent_keys[ix];
 				std::string ck = linked->m_child_keys[ix];
@@ -1362,7 +1362,7 @@ void category::update_value(const std::vector<row_handle> &rows, std::string_vie
 			{
 				condition cond_c;
 
-				for (size_t ix = 0; ix < linked->m_parent_keys.size(); ++ix)
+				for (std::size_t ix = 0; ix < linked->m_parent_keys.size(); ++ix)
 				{
 					std::string pk = linked->m_parent_keys[ix];
 					std::string ck = linked->m_child_keys[ix];
@@ -1380,7 +1380,7 @@ void category::update_value(const std::vector<row_handle> &rows, std::string_vie
 				// oops, we need to split this child, unless a row already exists for the new value
 				condition check;
 
-				for (size_t ix = 0; ix < linked->m_parent_keys.size(); ++ix)
+				for (std::size_t ix = 0; ix < linked->m_parent_keys.size(); ++ix)
 				{
 					std::string pk = linked->m_parent_keys[ix];
 					std::string ck = linked->m_child_keys[ix];
@@ -1476,7 +1476,7 @@ void category::update_value(row *row, uint16_t item, std::string_view value, boo
 			condition cond;
 			std::string childItemName;
 
-			for (size_t ix = 0; ix < linked->m_parent_keys.size(); ++ix)
+			for (std::size_t ix = 0; ix < linked->m_parent_keys.size(); ++ix)
 			{
 				std::string pk = linked->m_parent_keys[ix];
 				std::string ck = linked->m_child_keys[ix];
@@ -1513,7 +1513,7 @@ void category::update_value(row *row, uint16_t item, std::string_view value, boo
 
 			condition cond_n;
 
-			for (size_t ix = 0; ix < linked->m_parent_keys.size(); ++ix)
+			for (std::size_t ix = 0; ix < linked->m_parent_keys.size(); ++ix)
 			{
 				std::string pk = linked->m_parent_keys[ix];
 				std::string ck = linked->m_child_keys[ix];
@@ -1720,7 +1720,7 @@ void category::sort(std::function<int(row_handle, row_handle)> f)
 	m_tail = rows.back().get_row();
 
 	auto r = m_head;
-	for (size_t i = 1; i < rows.size(); ++i)
+	for (std::size_t i = 1; i < rows.size(); ++i)
 		r = r->m_next = rows[i].get_row();
 	r->m_next = nullptr;
 
@@ -1736,7 +1736,7 @@ void category::reorder_by_index()
 
 namespace detail
 {
-	size_t write_value(std::ostream &os, std::string_view value, size_t offset, size_t width, bool right_aligned)
+	std::size_t write_value(std::ostream &os, std::string_view value, std::size_t offset, std::size_t width, bool right_aligned)
 	{
 		if (value.find('\n') != std::string::npos or width == 0 or value.length() > 132) // write as text item
 		{
@@ -1897,7 +1897,7 @@ void category::write(std::ostream &os, const std::vector<uint16_t> &order, bool 
 	{
 		os << "loop_\n";
 
-		std::vector<size_t> itemWidths(m_items.size());
+		std::vector<std::size_t> itemWidths(m_items.size());
 
 		for (auto cix : order)
 		{
@@ -1919,7 +1919,7 @@ void category::write(std::ostream &os, const std::vector<uint16_t> &order, bool 
 
 				if (v->text().find('\n') == std::string_view::npos)
 				{
-					size_t l = v->text().length();
+					std::size_t l = v->text().length();
 
 					if (not sac_parser::is_unquoted_string(v->text()))
 						l += 2;
@@ -1935,11 +1935,11 @@ void category::write(std::ostream &os, const std::vector<uint16_t> &order, bool 
 
 		for (auto r = m_head; r != nullptr; r = r->m_next) // loop over rows
 		{
-			size_t offset = 0;
+			std::size_t offset = 0;
 
 			for (uint16_t cix : order)
 			{
-				size_t w = itemWidths[cix];
+				std::size_t w = itemWidths[cix];
 
 				std::string_view s;
 				auto iv = r->get(cix);
@@ -1949,7 +1949,7 @@ void category::write(std::ostream &os, const std::vector<uint16_t> &order, bool 
 				if (s.empty())
 					s = "?";
 
-				size_t l = s.length();
+				std::size_t l = s.length();
 				if (not sac_parser::is_unquoted_string(s))
 					l += 2;
 				if (l < w)
@@ -1977,7 +1977,7 @@ void category::write(std::ostream &os, const std::vector<uint16_t> &order, bool 
 	else
 	{
 		// first find the indent level
-		size_t l = 0;
+		std::size_t l = 0;
 
 		for (auto &col : m_items)
 		{
@@ -1989,7 +1989,7 @@ void category::write(std::ostream &os, const std::vector<uint16_t> &order, bool 
 
 		l += 3;
 
-		size_t width = 1;
+		std::size_t width = 1;
 
 		for (auto cix : order)
 		{
@@ -2004,7 +2004,7 @@ void category::write(std::ostream &os, const std::vector<uint16_t> &order, bool 
 			if (s.empty())
 				s = "?";
 
-			size_t l2 = s.length();
+			std::size_t l2 = s.length();
 
 			if (not sac_parser::is_unquoted_string(s))
 				l2 += 2;
@@ -2030,7 +2030,7 @@ void category::write(std::ostream &os, const std::vector<uint16_t> &order, bool 
 			if (s.empty())
 				s = "?";
 
-			size_t offset = l;
+			std::size_t offset = l;
 			if (s.length() + l >= kMaxLineLength)
 			{
 				os << '\n';
@@ -2070,7 +2070,7 @@ bool category::operator==(const category &rhs) const
 	typedef std::function<int(std::string_view, std::string_view)> compType;
 	std::vector<std::tuple<std::string, compType>> item_names;
 	std::vector<std::string> keys;
-	std::vector<size_t> keyIx;
+	std::vector<std::size_t> keyIx;
 
 	if (catValidator == nullptr)
 	{

@@ -604,7 +604,7 @@ class monomer : public residue
 	monomer &operator=(monomer &&rhs);
 
 	/// \brief constructor with actual values
-	monomer(const polymer &polymer, size_t index, int seqID, const std::string &authSeqID,
+	monomer(const polymer &polymer, std::size_t index, int seqID, const std::string &authSeqID,
 		const std::string &pdbInsCode, const std::string &compoundID);
 
 	bool is_first_in_chain() const; ///< Return if this residue is the first residue in the chain
@@ -624,8 +624,8 @@ class monomer : public residue
 	float omega() const; ///< Return the omega value for this residue
 
 	// torsion angles
-	size_t nr_of_chis() const; ///< Return how many torsion angles can be calculated
-	float chi(size_t i) const; ///< Return torsion angle @a i
+	std::size_t nr_of_chis() const; ///< Return how many torsion angles can be calculated
+	float chi(std::size_t i) const; ///< Return torsion angle @a i
 
 	bool is_cis() const; ///< Return true if this residue is in a cis conformation
 
@@ -674,7 +674,7 @@ class monomer : public residue
 
   private:
 	const polymer *m_polymer;
-	size_t m_index;
+	std::size_t m_index;
 };
 
 // --------------------------------------------------------------------
@@ -756,9 +756,9 @@ class sugar : public residue
 	void set_link(atom link) { m_link = link; }
 
 	/// \brief Return the sugar number of the sugar linked to C1
-	size_t get_link_nr() const
+	std::size_t get_link_nr() const
 	{
-		size_t result = 0;
+		std::size_t result = 0;
 		if (m_link)
 			result = m_link.get_property_int("auth_seq_id");
 		return result;
@@ -865,10 +865,10 @@ class structure
 {
   public:
 	/// \brief Read the structure from cif::file @a p
-	structure(file &p, size_t modelNr = 1, StructureOpenOptions options = {});
+	structure(file &p, std::size_t modelNr = 1, StructureOpenOptions options = {});
 
 	/// \brief Load the structure from already parsed mmCIF data in @a db
-	structure(datablock &db, size_t modelNr = 1, StructureOpenOptions options = {});
+	structure(datablock &db, std::size_t modelNr = 1, StructureOpenOptions options = {});
 
 	/** @cond */
 	structure(structure &&s) = default;
@@ -881,7 +881,7 @@ class structure
 	~structure() = default;
 
 	/// \brief Return the model number
-	size_t get_model_nr() const { return m_model_nr; }
+	std::size_t get_model_nr() const { return m_model_nr; }
 
 	/// \brief Return a list of all the atoms in this structure
 	const std::vector<atom> &atoms() const { return m_atoms; }
@@ -1107,9 +1107,9 @@ class structure
 	void remove_sugar(sugar &sugar);
 
 	datablock &m_db;
-	size_t m_model_nr;
+	std::size_t m_model_nr;
 	std::vector<atom> m_atoms;
-	std::vector<size_t> m_atom_index;
+	std::vector<std::size_t> m_atom_index;
 	std::list<polymer> m_polymers;
 	std::list<branch> m_branches;
 	std::vector<residue> m_non_polymers;

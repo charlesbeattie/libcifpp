@@ -36,7 +36,7 @@ namespace cif::gzio
 {
 
 /** The default buffer size to use */
-const size_t kDefaultBufferSize = 256;
+const std::size_t kDefaultBufferSize = 256;
 
 // --------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ class basic_streambuf : public std::basic_streambuf<CharT, Traits>
 /// This implementation of streambuf can decompress (inflate) data compressed
 /// using zlib.
 
-template <typename CharT, typename Traits, size_t BufferSize = kDefaultBufferSize>
+template <typename CharT, typename Traits, std::size_t BufferSize = kDefaultBufferSize>
 class basic_igzip_streambuf : public basic_streambuf<CharT, Traits>
 {
   public:
@@ -317,7 +317,7 @@ class basic_igzip_streambuf : public basic_streambuf<CharT, Traits>
 ///
 /// This implementation of streambuf can compress (deflate) data using zlib.
 
-template <typename CharT, typename Traits, size_t BufferSize = kDefaultBufferSize>
+template <typename CharT, typename Traits, std::size_t BufferSize = kDefaultBufferSize>
 class basic_ogzip_streambuf : public basic_streambuf<CharT, Traits>
 {
   public:

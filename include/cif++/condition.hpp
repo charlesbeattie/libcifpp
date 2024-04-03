@@ -29,6 +29,7 @@
 #include "cif++/row.hpp"
 
 #include <cassert>
+#include <concepts>
 #include <functional>
 #include <iostream>
 #include <regex>
@@ -470,6 +471,106 @@ namespace detail
 		std::optional<row_handle> m_single_hit;
 	};
 
+	struct key_equals_number_condition_impl : public condition_impl
+	{
+		key_equals_number_condition_impl(const std::string &name, double v)
+			: m_item_name(name)
+			, m_value(v)
+		{
+		}
+
+		condition_impl *prepare(const category &c) override;
+
+		bool test(row_handle r) const override
+		{
+			return m_single_hit.has_value() ? *m_single_hit == r : r[m_item_ix].compare(m_value) == 0;
+		}
+
+		void str(std::ostream &os) const override
+		{
+			os << m_item_name << " == " << m_value;
+		}
+
+		virtual std::optional<row_handle> single() const override
+		{
+			return m_single_hit;
+		}
+
+		virtual bool equals(const condition_impl *rhs) const override
+		{
+			if (typeid(*rhs) == typeid(key_equals_number_condition_impl))
+			{
+				auto ri = static_cast<const key_equals_number_condition_impl *>(rhs);
+				if (m_single_hit.has_value() or ri->m_single_hit.has_value())
+					return m_single_hit == ri->m_single_hit;
+				else
+					// watch out, both m_item_ix might be the same while item_names might be diffent (in case they both do not exist in the category)
+					return m_item_ix == ri->m_item_ix and m_value == ri->m_value and m_item_name == ri->m_item_name;
+			}
+			return this == rhs;
+		}
+
+		std::string m_item_name;
+		uint16_t m_item_ix = 0;
+		double m_value;
+		std::optional<row_handle> m_single_hit;
+	};
+
+	struct key_equals_number_or_empty_condition_impl : public condition_impl
+	{
+		key_equals_number_or_empty_condition_impl(key_equals_number_condition_impl *equals)
+			: m_item_name(equals->m_item_name)
+			, m_value(equals->m_value)
+			, m_single_hit(equals->m_single_hit)
+		{
+		}
+
+		condition_impl *prepare(const category &c) override
+		{
+			m_item_ix = get_item_ix(c, m_item_name);
+			return this;
+		}
+
+		bool test(row_handle r) const override
+		{
+			bool result = false;
+			if (m_single_hit.has_value())
+				result = *m_single_hit == r;
+			else
+				result = r[m_item_ix].empty() or r[m_item_ix].compare(m_value) == 0;
+			return result;
+		}
+
+		void str(std::ostream &os) const override
+		{
+			os << '(' << m_item_name << " == " << m_value << " OR " << m_item_name << " IS NULL)";
+		}
+
+		virtual std::optional<row_handle> single() const override
+		{
+			return m_single_hit;
+		}
+
+		virtual bool equals(const condition_impl *rhs) const override
+		{
+			if (typeid(*rhs) == typeid(key_equals_number_or_empty_condition_impl))
+			{
+				auto ri = static_cast<const key_equals_number_or_empty_condition_impl *>(rhs);
+				if (m_single_hit.has_value() or ri->m_single_hit.has_value())
+					return m_single_hit == ri->m_single_hit;
+				else
+					// watch out, both m_item_ix might be the same while item_names might be diffent (in case they both do not exist in the category)
+					return m_item_ix == ri->m_item_ix and m_value == ri->m_value and m_item_name == ri->m_item_name;
+			}
+			return this == rhs;
+		}
+
+		std::string m_item_name;
+		uint16_t m_item_ix = 0;
+		double m_value;
+		std::optional<row_handle> m_single_hit;
+	};
+
 	struct key_compare_condition_impl : public condition_impl
 	{
 		template <typename COMP>
@@ -876,7 +977,8 @@ inline condition operator or(condition &&a, condition &&b)
 			if (ci->m_item_name == ce->m_item_name)
 				return condition(new detail::key_equals_or_empty_condition_impl(ci));
 		}
-		else if (typeid(*b.m_impl) == typeid(detail::key_equals_condition_impl) and
+		
+		if (typeid(*b.m_impl) == typeid(detail::key_equals_condition_impl) and
 				 typeid(*a.m_impl) == typeid(detail::key_is_empty_condition_impl))
 		{
 			auto ci = static_cast<detail::key_equals_condition_impl *>(b.m_impl);
@@ -884,6 +986,26 @@ inline condition operator or(condition &&a, condition &&b)
 
 			if (ci->m_item_name == ce->m_item_name)
 				return condition(new detail::key_equals_or_empty_condition_impl(ci));
+		}
+
+		if (typeid(*a.m_impl) == typeid(detail::key_equals_number_condition_impl) and
+			typeid(*b.m_impl) == typeid(detail::key_is_empty_condition_impl))
+		{
+			auto ci = static_cast<detail::key_equals_number_condition_impl *>(a.m_impl);
+			auto ce = static_cast<detail::key_is_empty_condition_impl *>(b.m_impl);
+
+			if (ci->m_item_name == ce->m_item_name)
+				return condition(new detail::key_equals_number_or_empty_condition_impl(ci));
+		}
+		
+		if (typeid(*b.m_impl) == typeid(detail::key_equals_number_condition_impl) and
+				 typeid(*a.m_impl) == typeid(detail::key_is_empty_condition_impl))
+		{
+			auto ci = static_cast<detail::key_equals_number_condition_impl *>(b.m_impl);
+			auto ce = static_cast<detail::key_is_empty_condition_impl *>(a.m_impl);
+
+			if (ci->m_item_name == ce->m_item_name)
+				return condition(new detail::key_equals_number_or_empty_condition_impl(ci));
 		}
 
 		return condition(new detail::or_condition_impl(std::move(a), std::move(b)));
@@ -959,13 +1081,16 @@ struct key
 	std::string m_item_name; ///< The item name
 };
 
-/**
- * @brief Operator to create an equals condition based on a key @a key and a value @a v
- */
 template <typename T>
+concept Numeric = ((std::is_floating_point_v<T> or std::is_integral_v<T>) and not std::is_same_v<T, bool>);
+
+/**
+ * @brief Operator to create an equals condition based on a key @a key and a numeric value @a v
+ */
+template <Numeric T>
 condition operator==(const key &key, const T &v)
 {
-	return condition(new detail::key_equals_condition_impl({ key.m_item_name, v }));
+	return condition(new detail::key_equals_number_condition_impl(key.m_item_name, v));
 }
 
 /**
@@ -977,6 +1102,16 @@ inline condition operator==(const key &key, std::string_view value)
 		return condition(new detail::key_equals_condition_impl({ key.m_item_name, value }));
 	else
 		return condition(new detail::key_is_empty_condition_impl(key.m_item_name));
+}
+
+/**
+ * @brief Operator to create an equals condition based on a key @a key and a value @a value
+ */
+template <typename T>
+	requires std::is_same_v<T, bool>
+inline condition operator==(const key &key, T value)
+{
+	return condition(new detail::key_equals_condition_impl({ key.m_item_name, value ? "y" : "n" }));
 }
 
 /**
@@ -999,7 +1134,7 @@ inline condition operator!=(const key &key, std::string_view value)
 /**
  * @brief Operator to create a greater than condition based on a key @a key and a value @a v
  */
-template <typename T>
+template <Numeric T>
 condition operator>(const key &key, const T &v)
 {
 	std::ostringstream s;
@@ -1007,14 +1142,14 @@ condition operator>(const key &key, const T &v)
 
 	return condition(new detail::key_compare_condition_impl(
 		key.m_item_name, [item_name = key.m_item_name, v](row_handle r, bool icase)
-		{ return r[item_name].template compare<T>(v, icase) > 0; },
+		{ return r[item_name].compare(v) > 0; },
 		s.str()));
 }
 
 /**
  * @brief Operator to create a greater than or equals condition based on a key @a key and a value @a v
  */
-template <typename T>
+template <Numeric T>
 condition operator>=(const key &key, const T &v)
 {
 	std::ostringstream s;
@@ -1022,14 +1157,14 @@ condition operator>=(const key &key, const T &v)
 
 	return condition(new detail::key_compare_condition_impl(
 		key.m_item_name, [item_name = key.m_item_name, v](row_handle r, bool icase)
-		{ return r[item_name].template compare<T>(v, icase) >= 0; },
+		{ return r[item_name].compare(v) >= 0; },
 		s.str()));
 }
 
 /**
  * @brief Operator to create a less than condition based on a key @a key and a value @a v
  */
-template <typename T>
+template <Numeric T>
 condition operator<(const key &key, const T &v)
 {
 	std::ostringstream s;
@@ -1037,14 +1172,14 @@ condition operator<(const key &key, const T &v)
 
 	return condition(new detail::key_compare_condition_impl(
 		key.m_item_name, [item_name = key.m_item_name, v](row_handle r, bool icase)
-		{ return r[item_name].template compare<T>(v, icase) < 0; },
+		{ return r[item_name].compare(v) < 0; },
 		s.str()));
 }
 
 /**
  * @brief Operator to create a less than or equals condition based on a key @a key and a value @a v
  */
-template <typename T>
+template <Numeric T>
 condition operator<=(const key &key, const T &v)
 {
 	std::ostringstream s;
@@ -1052,7 +1187,63 @@ condition operator<=(const key &key, const T &v)
 
 	return condition(new detail::key_compare_condition_impl(
 		key.m_item_name, [item_name = key.m_item_name, v](row_handle r, bool icase)
-		{ return r[item_name].template compare<T>(v, icase) <= 0; },
+		{ return r[item_name].compare(v) <= 0; },
+		s.str()));
+}
+
+/**
+ * @brief Operator to create a greater than condition based on a key @a key and a value @a v
+ */
+inline condition operator>(const key &key, std::string_view v)
+{
+	std::ostringstream s;
+	s << " > " << v;
+
+	return condition(new detail::key_compare_condition_impl(
+		key.m_item_name, [item_name = key.m_item_name, v](row_handle r, bool icase)
+		{ return r[item_name].compare(v, icase) > 0; },
+		s.str()));
+}
+
+/**
+ * @brief Operator to create a greater than or equals condition based on a key @a key and a value @a v
+ */
+inline condition operator>=(const key &key, std::string_view v)
+{
+	std::ostringstream s;
+	s << " >= " << v;
+
+	return condition(new detail::key_compare_condition_impl(
+		key.m_item_name, [item_name = key.m_item_name, v](row_handle r, bool icase)
+		{ return r[item_name].compare(v, icase) >= 0; },
+		s.str()));
+}
+
+/**
+ * @brief Operator to create a less than condition based on a key @a key and a value @a v
+ */
+inline condition operator<(const key &key, std::string_view v)
+{
+	std::ostringstream s;
+	s << " < " << v;
+
+	return condition(new detail::key_compare_condition_impl(
+		key.m_item_name, [item_name = key.m_item_name, v](row_handle r, bool icase)
+		{ return r[item_name].compare(v, icase) < 0; },
+		s.str()));
+}
+
+/**
+ * @brief Operator to create a less than or equals condition based on a key @a key and a value @a v
+ */
+inline condition operator<=(const key &key, std::string_view v)
+{
+	std::ostringstream s;
+	s << " <= " << v;
+
+	return condition(new detail::key_compare_condition_impl(
+		key.m_item_name, [item_name = key.m_item_name, v](row_handle r, bool icase)
+		{ return r[item_name].compare(v, icase) <= 0; },
 		s.str()));
 }
 
@@ -1146,7 +1337,7 @@ namespace literals
 	 * @param length The length of @a text
 	 * @return key The cif::key created
 	 */
-	inline key operator""_key(const char *text, size_t length)
+	inline key operator""_key(const char *text, std::size_t length)
 	{
 		return key(std::string(text, length));
 	}

@@ -293,15 +293,15 @@ class category
 	}
 
 	/// Return a count of the rows in this container
-	size_t size() const
+	std::size_t size() const
 	{
 		return std::distance(cbegin(), cend());
 	}
 
 	/// Return the theoretical maximum number or rows that can be stored
-	size_t max_size() const
+	std::size_t max_size() const
 	{
-		return std::numeric_limits<size_t>::max(); // this is a bit optimistic, I guess
+		return std::numeric_limits<std::size_t>::max(); // this is a bit optimistic, I guess
 	}
 
 	/// Return true if the category is empty
@@ -831,9 +831,9 @@ class category
 	/// @brief Return the total number of rows that match condition @a cond
 	/// @param cond The condition to match
 	/// @return The count
-	size_t count(condition &&cond) const
+	std::size_t count(condition &&cond) const
 	{
-		size_t result = 0;
+		std::size_t result = 0;
 
 		if (cond)
 		{
@@ -903,14 +903,14 @@ class category
 	/// @brief Erase all rows that match condition @a cond
 	/// @param cond The condition
 	/// @return The number of rows that have been erased
-	size_t erase(condition &&cond);
+	std::size_t erase(condition &&cond);
 
 	/// @brief Erase all rows that match condition @a cond calling
 	/// the visitor function @a visit for each before actually erasing it.
 	/// @param cond The condition
 	/// @param visit The visitor function
 	/// @return The number of rows that have been erased
-	size_t erase(condition &&cond, std::function<void(row_handle)> &&visit);
+	std::size_t erase(condition &&cond, std::function<void(row_handle)> &&visit);
 
 	/// @brief Emplace the values in @a ri in a new row
 	/// @param ri An object containing the values to insert

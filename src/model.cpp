@@ -488,7 +488,7 @@ std::ostream &operator<<(std::ostream &os, const residue &res)
 // --------------------------------------------------------------------
 // monomer
 
-monomer::monomer(const polymer &polymer, size_t index, int seqID, const std::string &authSeqID, const std::string &pdbInsCode, const std::string &compoundID)
+monomer::monomer(const polymer &polymer, std::size_t index, int seqID, const std::string &authSeqID, const std::string &pdbInsCode, const std::string &compoundID)
 	: residue(*polymer.get_structure(), compoundID, polymer.get_asym_id(), seqID, polymer.get_auth_asym_id(), authSeqID, pdbInsCode)
 	, m_polymer(&polymer)
 	, m_index(index)
@@ -693,9 +693,9 @@ const std::map<std::string, std::vector<std::string>> kChiAtomsMap = {
 	{"PRO", {"CG", "CD"}},
 	{"VAL", {"CG1"}}};
 
-size_t monomer::nr_of_chis() const
+std::size_t monomer::nr_of_chis() const
 {
-	size_t result = 0;
+	std::size_t result = 0;
 
 	auto i = kChiAtomsMap.find(m_compound_id);
 	if (i != kChiAtomsMap.end())
@@ -704,7 +704,7 @@ size_t monomer::nr_of_chis() const
 	return result;
 }
 
-float monomer::chi(size_t nr) const
+float monomer::chi(std::size_t nr) const
 {
 	float result = 0;
 
@@ -891,7 +891,7 @@ polymer::polymer(structure &s, const std::string &entityID, const std::string &a
 {
 	using namespace cif::literals;
 
-	std::map<size_t, size_t> ix;
+	std::map<std::size_t, std::size_t> ix;
 
 	auto &poly_seq_scheme = s.get_datablock()["pdbx_poly_seq_scheme"];
 	reserve(poly_seq_scheme.size());
@@ -906,7 +906,7 @@ polymer::polymer(structure &s, const std::string &entityID, const std::string &a
 		if (authSeqID.empty() and pdbSeqNum.has_value())
 			authSeqID = std::to_string(*pdbSeqNum);
 
-		size_t index = size();
+		std::size_t index = size();
 
 		// store only the first
 		if (not ix.count(seqID))
@@ -1090,7 +1090,7 @@ branch::branch(structure &structure, const std::string &asym_id, const std::stri
 			emplace_back(*this, comp_id, asym_id, num);
 		}
 
-		for (const auto &[num1, num2, atom1, atom2] : branch_link.find<size_t, size_t, std::string, std::string>(
+		for (const auto &[num1, num2, atom1, atom2] : branch_link.find<std::size_t, std::size_t, std::string, std::string>(
 				 "entity_id"_key == asym_entity_id, "entity_branch_list_num_1", "entity_branch_list_num_2", "atom_id_1", "atom_id_2"))
 		{
 			// if (not iequals(atom1, "c1"))
@@ -1117,7 +1117,7 @@ void branch::link_atoms()
 
 		auto entity_id = front().get_entity_id();
 
-		for (const auto &[num1, num2, atom1, atom2] : branch_link.find<size_t, size_t, std::string, std::string>(
+		for (const auto &[num1, num2, atom1, atom2] : branch_link.find<std::size_t, std::size_t, std::string, std::string>(
 				"entity_id"_key == entity_id, "entity_branch_list_num_1", "entity_branch_list_num_2", "atom_id_1", "atom_id_2"))
 		{
 			// if (not iequals(atom1, "c1"))
@@ -1252,12 +1252,12 @@ float branch::weight() const
 // --------------------------------------------------------------------
 //	structure
 
-structure::structure(file &p, size_t modelNr, StructureOpenOptions options)
+structure::structure(file &p, std::size_t modelNr, StructureOpenOptions options)
 	: structure(p.front(), modelNr, options)
 {
 }
 
-structure::structure(datablock &db, size_t modelNr, StructureOpenOptions options)
+structure::structure(datablock &db, std::size_t modelNr, StructureOpenOptions options)
 	: m_db(db)
 	, m_model_nr(modelNr)
 {
@@ -1268,7 +1268,7 @@ structure::structure(datablock &db, size_t modelNr, StructureOpenOptions options
 	// Check to see if we should actually load another model?
 	if (m_atoms.empty() and m_model_nr == 1)
 	{
-		std::optional<size_t> model_nr;
+		std::optional<std::size_t> model_nr;
 		cif::tie(model_nr) = atomCat.front().get("pdbx_PDB_model_num");
 		if (model_nr and *model_nr != m_model_nr)
 		{
@@ -1532,9 +1532,9 @@ atom structure::get_atom_by_label(const std::string &atom_id, const std::string 
 atom structure::get_atom_by_position(point p) const
 {
 	double dist = std::numeric_limits<double>::max();
-	size_t index = std::numeric_limits<size_t>::max();
+	std::size_t index = std::numeric_limits<std::size_t>::max();
 
-	for (size_t i = 0; i < m_atoms.size(); ++i)
+	for (std::size_t i = 0; i < m_atoms.size(); ++i)
 	{
 		auto &a = m_atoms.at(i);
 
@@ -1555,9 +1555,9 @@ atom structure::get_atom_by_position(point p) const
 atom structure::get_atom_by_position_and_type(point p, std::string_view type, std::string_view res_type) const
 {
 	double dist = std::numeric_limits<double>::max();
-	size_t index = std::numeric_limits<size_t>::max();
+	std::size_t index = std::numeric_limits<std::size_t>::max();
 
-	for (size_t i = 0; i < m_atoms.size(); ++i)
+	for (std::size_t i = 0; i < m_atoms.size(); ++i)
 	{
 		auto &a = m_atoms.at(i);
 
@@ -2131,14 +2131,14 @@ void structure::remove_sugar(sugar &s)
 	auto si = std::find(branch.begin(), branch.end(), s);
 	if (si == branch.end())
 		throw std::runtime_error("sugar not part of branch");
-	size_t six = si - branch.begin();
+	std::size_t six = si - branch.begin();
 
 	if (six == 0)	// first sugar, means the death of this branch
 		remove_branch(branch);
 	else
 	{
-		std::set<size_t> dix;
-		std::stack<size_t> test;
+		std::set<std::size_t> dix;
+		std::stack<std::size_t> test;
 		test.push(s.num());
 
 		while (not test.empty())
@@ -2279,7 +2279,7 @@ std::string structure::create_non_poly(const std::string &entity_id, const std::
 	}
 
 	auto &pdbx_nonpoly_scheme = m_db["pdbx_nonpoly_scheme"];
-	size_t ndb_nr = pdbx_nonpoly_scheme.find("asym_id"_key == asym_id and "entity_id"_key == entity_id).size() + 1;
+	std::size_t ndb_nr = pdbx_nonpoly_scheme.find("asym_id"_key == asym_id and "entity_id"_key == entity_id).size() + 1;
 	pdbx_nonpoly_scheme.emplace({
 		{"asym_id", asym_id},
 		{"entity_id", entity_id},
@@ -2342,7 +2342,7 @@ std::string structure::create_non_poly(const std::string &entity_id, std::vector
 	}
 
 	auto &pdbx_nonpoly_scheme = m_db["pdbx_nonpoly_scheme"];
-	size_t ndb_nr = pdbx_nonpoly_scheme.find("asym_id"_key == asym_id and "entity_id"_key == entity_id).size() + 1;
+	std::size_t ndb_nr = pdbx_nonpoly_scheme.find("asym_id"_key == asym_id and "entity_id"_key == entity_id).size() + 1;
 	pdbx_nonpoly_scheme.emplace({
 		{"asym_id", asym_id},
 		{"entity_id", entity_id},
@@ -2751,7 +2751,7 @@ void structure::cleanup_empty_categories()
 		std::string type, id;
 		cif::tie(type, id) = entity.get("type", "id");
 
-		std::optional<size_t> count;
+		std::optional<std::size_t> count;
 		if (type == "polymer")
 			count = m_db["struct_asym"].find("entity_id"_key == id).size();
 		else if (type == "non-polymer" or type == "water")
@@ -2797,7 +2797,7 @@ void structure::validate_atoms() const
 {
 	// validate order
 	assert(m_atoms.size() == m_atom_index.size());
-	for (size_t i = 0; i + i < m_atoms.size(); ++i)
+	for (std::size_t i = 0; i + i < m_atoms.size(); ++i)
 		assert(m_atoms[m_atom_index[i]].id().compare(m_atoms[m_atom_index[i + 1]].id()) < 0);
 
 	std::vector<atom> atoms = m_atoms;

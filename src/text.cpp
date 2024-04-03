@@ -433,10 +433,10 @@ std::string::const_iterator nextLineBreak(std::string::const_iterator text, std:
 	return text;
 }
 
-std::vector<std::string> wrapLine(const std::string &text, size_t width)
+std::vector<std::string> wrapLine(const std::string &text, std::size_t width)
 {
 	std::vector<std::string> result;
-	std::vector<size_t> offsets = { 0 };
+	std::vector<std::size_t> offsets = { 0 };
 
 	auto b = text.begin();
 	while (b != text.end())
@@ -448,18 +448,18 @@ std::vector<std::string> wrapLine(const std::string &text, size_t width)
 		b = e;
 	}
 
-	size_t count = offsets.size() - 1;
+	std::size_t count = offsets.size() - 1;
 
-	std::vector<size_t> minima(count + 1, 1000000);
+	std::vector<std::size_t> minima(count + 1, 1000000);
 	minima[0] = 0;
-	std::vector<size_t> breaks(count + 1, 0);
+	std::vector<std::size_t> breaks(count + 1, 0);
 
-	for (size_t i = 0; i < count; ++i)
+	for (std::size_t i = 0; i < count; ++i)
 	{
-		size_t j = i + 1;
+		std::size_t j = i + 1;
 		while (j <= count)
 		{
-			size_t w = offsets[j] - offsets[i];
+			std::size_t w = offsets[j] - offsets[i];
 
 			if (w > width)
 				break;
@@ -467,7 +467,7 @@ std::vector<std::string> wrapLine(const std::string &text, size_t width)
 			while (w > 0 and isspace(text[offsets[i] + w - 1]))
 				--w;
 
-			size_t cost = minima[i];
+			std::size_t cost = minima[i];
 			if (j < count) // last line may be shorter
 				cost += (width - w) * (width - w);
 
@@ -481,10 +481,10 @@ std::vector<std::string> wrapLine(const std::string &text, size_t width)
 		}
 	}
 
-	size_t j = count;
+	std::size_t j = count;
 	while (j > 0)
 	{
-		size_t i = breaks[j];
+		std::size_t i = breaks[j];
 		result.push_back(text.substr(offsets[i], offsets[j] - offsets[i]));
 		j = i;
 	}
@@ -494,7 +494,7 @@ std::vector<std::string> wrapLine(const std::string &text, size_t width)
 	return result;
 }
 
-std::vector<std::string> word_wrap(const std::string &text, size_t width)
+std::vector<std::string> word_wrap(const std::string &text, std::size_t width)
 {
 	std::vector<std::string> result;
 	for (auto p : cif::split<std::string>(text, "\n"))

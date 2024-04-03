@@ -160,7 +160,7 @@ PDBRecord::~PDBRecord()
 {
 }
 
-void *PDBRecord::operator new(size_t size, size_t vLen)
+void *PDBRecord::operator new(std::size_t size, std::size_t vLen)
 {
 	return malloc(size + vLen + 1);
 }
@@ -170,7 +170,7 @@ void PDBRecord::operator delete(void *p)
 	free(p);
 }
 
-void PDBRecord::operator delete(void *p, size_t vLen)
+void PDBRecord::operator delete(void *p, std::size_t vLen)
 {
 	free(p);
 }
@@ -180,7 +180,7 @@ bool PDBRecord::is(const char *name) const
 	return iequals(mName, name);
 }
 
-char PDBRecord::vC(size_t column)
+char PDBRecord::vC(std::size_t column)
 {
 	char result = ' ';
 	if (column - 7 < mVlen)
@@ -188,7 +188,7 @@ char PDBRecord::vC(size_t column)
 	return result;
 }
 
-std::string PDBRecord::vS(size_t columnFirst, size_t columnLast)
+std::string PDBRecord::vS(std::size_t columnFirst, std::size_t columnLast)
 {
 	std::string result;
 
@@ -272,7 +272,7 @@ int PDBRecord::vI(int columnFirst, int columnLast)
 	return result;
 }
 
-std::string PDBRecord::vF(size_t columnFirst, size_t columnLast)
+std::string PDBRecord::vF(std::size_t columnFirst, std::size_t columnLast)
 {
 	// for now... TODO: check format?
 	return vS(columnFirst, columnLast);
@@ -780,17 +780,17 @@ class PDBFileParser
 
 	// ----------------------------------------------------------------
 
-	char vC(size_t column) const
+	char vC(std::size_t column) const
 	{
 		return mRec->vC(column);
 	}
 
-	std::string vS(size_t columnFirst, size_t columnLast = std::numeric_limits<size_t>::max()) const
+	std::string vS(std::size_t columnFirst, std::size_t columnLast = std::numeric_limits<std::size_t>::max()) const
 	{
 		return mRec->vS(columnFirst, columnLast);
 	}
 
-	std::string vF(size_t columnFirst, size_t columnLast) const
+	std::string vF(std::size_t columnFirst, std::size_t columnLast) const
 	{
 		return mRec->vF(columnFirst, columnLast);
 	}
@@ -847,7 +847,7 @@ class PDBFileParser
 	void ParseRemarks();
 
 	//	void ParseRemark3();
-	//	size_t ParseRemark3(const std::string& program, const Remark3Template templ[], size_t N);
+	//	std::size_t ParseRemark3(const std::string& program, const Remark3Template templ[], std::size_t N);
 	//	std::string NextRemark3Line();
 
 	void ParseRemark200();
@@ -1320,7 +1320,7 @@ void PDBFileParser::PreParseInput(std::istream &is)
 		{
 			std::string siteName = value.substr(5, 3);
 			cif::trim_right(value);
-			size_t n = value.length() - 12;
+			std::size_t n = value.length() - 12;
 			value += std::string(11 - (n % 11), ' ');
 
 			while (lookahead.substr(0, 6) == type and lookahead.substr(11, 3) == siteName)
@@ -4202,7 +4202,7 @@ void PDBFileParser::ConstructEntities()
 
 			chains.push_back(std::string{ chain.mDbref.chainID });
 
-			size_t seqLen = 0, seqCanLen = 0;
+			std::size_t seqLen = 0, seqCanLen = 0;
 
 			for (auto &res : chain.mSeqres)
 			{
@@ -4265,7 +4265,7 @@ void PDBFileParser::ConstructEntities()
 			}
 
 			auto cat_ps = getCategory("entity_poly_seq");
-			for (size_t i = 0; i < chain.mSeqres.size(); ++i)
+			for (std::size_t i = 0; i < chain.mSeqres.size(); ++i)
 			{
 				auto &rs = chain.mSeqres[i];
 
@@ -4335,7 +4335,7 @@ void PDBFileParser::ConstructEntities()
 	std::map<std::tuple<std::string, std::string>, int> ndbSeqNum; // for nonpoly scheme
 	std::map<std::string, int> entityAuthSeqNum;                   // for nonpoly scheme too
 
-	for (size_t i = 0; i < mHets.size(); ++i)
+	for (std::size_t i = 0; i < mHets.size(); ++i)
 	{
 		auto &heti = mHets[i];
 
@@ -5712,7 +5712,7 @@ void PDBFileParser::ParseCoordinate(int modelNr)
 	stable_sort(atoms.begin(), atoms.end(), rLess);
 
 	// now reiterate the atoms to reorder alternates
-	for (size_t i = 0; i + 1 < atoms.size(); ++i)
+	for (std::size_t i = 0; i + 1 < atoms.size(); ++i)
 	{
 		char altLoc = std::get<3>(atoms[i])->vC(17);
 
@@ -6361,7 +6361,7 @@ bool PDBFileParser::PDBChain::SameSequence(const PDBChain &rhs) const
 {
 	bool result = mSeqres.size() == rhs.mSeqres.size();
 
-	for (size_t i = 0; result and i < mSeqres.size(); ++i)
+	for (std::size_t i = 0; result and i < mSeqres.size(); ++i)
 		result = mSeqres[i].mMonID == rhs.mSeqres[i].mMonID;
 
 	return result;

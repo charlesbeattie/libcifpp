@@ -125,7 +125,7 @@ class format_plus_arg
 
   private:
 
-	template <size_t... I>
+	template <std::size_t... I>
 	void copy_vargs(std::index_sequence<I...>)
 	{
 		((std::get<I>(m_vargs) = *std::get<I>(m_args)), ...);

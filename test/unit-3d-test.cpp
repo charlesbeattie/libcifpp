@@ -34,11 +34,11 @@
 
 // --------------------------------------------------------------------
 
-cif::file operator""_cf(const char *text, size_t length)
+cif::file operator""_cf(const char *text, std::size_t length)
 {
 	struct membuf : public std::streambuf
 	{
-		membuf(char *text, size_t length)
+		membuf(char *text, std::size_t length)
 		{
 			this->setg(text, text, text + length);
 		}
@@ -230,7 +230,7 @@ TEST_CASE("dh_q_1")
 
 TEST_CASE("m2q_0, *utf::tolerance(0.001f)")
 {
-	for (size_t i = 0; i < cif::kSymopNrTableSize; ++i)
+	for (std::size_t i = 0; i < cif::kSymopNrTableSize; ++i)
 	{
 		auto d = cif::kSymopNrTable[i].symop().data();
 
@@ -256,10 +256,10 @@ TEST_CASE("m2q_0, *utf::tolerance(0.001f)")
 
 		auto ev = es.eigenvalues();
 
-		size_t bestJ = 0;
+		std::size_t bestJ = 0;
 		float bestEV = -1;
 
-		for (size_t j = 0; j < 4; ++j)
+		for (std::size_t j = 0; j < 4; ++j)
 		{
 			if (bestEV < ev[j].real())
 			{
@@ -293,7 +293,7 @@ TEST_CASE("m2q_0, *utf::tolerance(0.001f)")
 
 // "TEST_CASE(m2q_1, *utf::tolerance(0.001f)")
 // {
-// 	for (size_t i = 0; i < cif::kSymopNrTableSize; ++i)
+// 	for (std::size_t i = 0; i < cif::kSymopNrTableSize; ++i)
 // 	{
 // 		auto d = cif::kSymopNrTable[i].symop().data();
 
@@ -317,10 +317,10 @@ TEST_CASE("m2q_0, *utf::tolerance(0.001f)")
 
 // 		auto &&[ev, em] = cif::eigen(m * (1/3.0f), false);
 
-// 		size_t bestJ = 0;
+// 		std::size_t bestJ = 0;
 // 		float bestEV = -1;
 
-// 		for (size_t j = 0; j < 4; ++j)
+// 		for (std::size_t j = 0; j < 4; ++j)
 // 		{
 // 			if (bestEV < ev[j])
 // 			{
