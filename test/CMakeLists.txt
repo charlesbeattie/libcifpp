@@ -1,16 +1,20 @@
 # We're using the older version 2 of Catch2
 
-find_package(Catch2 QUIET)
+if(NOT(Catch2_FOUND OR TARGET Catch2))
+	find_package(Catch2 QUIET)
 
-if(NOT Catch2_FOUND)
-	FetchContent_Declare(
-		Catch2
-		GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-		GIT_TAG v2.13.9)
+	if(NOT Catch2_FOUND)
+		include(FetchContent)
 
-	FetchContent_MakeAvailable(Catch2)
+		FetchContent_Declare(
+			Catch2
+			GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+			GIT_TAG v2.13.9)
 
-	set(Catch2_VERSION "2.13.9")
+		FetchContent_MakeAvailable(Catch2)
+
+		set(Catch2_VERSION "2.13.9")
+	endif()
 endif()
 
 list(
@@ -49,8 +53,7 @@ foreach(CIFPP_TEST IN LISTS CIFPP_tests)
 		target_compile_definitions(${CIFPP_TEST} PUBLIC CATCH22=1)
 	endif()
 
-	target_link_libraries(${CIFPP_TEST} PRIVATE Threads::Threads cifpp::cifpp
-		Catch2::Catch2)
+	target_link_libraries(${CIFPP_TEST} PRIVATE cifpp::cifpp Catch2::Catch2)
 	target_include_directories(${CIFPP_TEST} PRIVATE "${EIGEN_INCLUDE_DIR}")
 
 	if(MSVC)
