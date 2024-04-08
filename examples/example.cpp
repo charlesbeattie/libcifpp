@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	cif::file file = cif::pdb::read(argv[1]);
+	cif::file file(argv[1]);
 
 	if (file.empty())
 	{
