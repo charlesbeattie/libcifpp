@@ -441,6 +441,10 @@ if(CIFPP_DATA_DIR)
 	target_compile_definitions(cifpp PUBLIC DATA_DIR="${CIFPP_DATA_DIR}")
 endif()
 
+if(NOT PROJECT_IS_TOP_LEVEL)
+	set(CIFPP_SHARE_DIR ${CIFPP_DATA_DIR} PARENT_SCOPE)
+endif()
+
 if(UNIX AND NOT BUILD_FOR_CCP4)
 	if("${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr/local")
 		set(CIFPP_CACHE_DIR
@@ -489,16 +493,16 @@ install(EXPORT cifpp
 	FILE "cifpp-targets.cmake"
 	DESTINATION lib/cmake/cifpp)
 
-	install(
-		FILES ${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ddl.dic
-		${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_pdbx.dic
-		${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ma.dic
-		DESTINATION ${CMAKE_INSTALL_DATADIR}/libcifpp)
+install(
+	FILES ${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ddl.dic
+	${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_pdbx.dic
+	${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ma.dic
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/libcifpp)
 
-	if(CIFPP_DATA_DIR AND CIFPP_DOWNLOAD_CCD)
-		install(FILES  ${COMPONENTS_CIF}
-			DESTINATION ${CMAKE_INSTALL_DATADIR}/libcifpp)
-	endif()
+if(CIFPP_DATA_DIR AND CIFPP_DOWNLOAD_CCD)
+	install(FILES ${COMPONENTS_CIF}
+		DESTINATION ${CMAKE_INSTALL_DATADIR}/libcifpp)
+endif()
 
 set(CONFIG_TEMPLATE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cifpp-config.cmake.in)
 
