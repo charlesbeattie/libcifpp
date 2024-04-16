@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
     if (file.empty())
     {
-        std::cerr << "Empty file" << std::endl;
+        std::cerr << "Empty file\n";
         exit(1);
     }
 
@@ -66,8 +66,8 @@ int main(int argc, char *argv[])
     auto n = atom_site.count(cif::key("label_atom_id") == "OXT");
 
     std::cout << "File contains " << atom_site.size() << " atoms of which "
-              << n << (n == 1 ? " is" : " are") << " OXT" << std::endl
-              << "residues with an OXT are:" << std::endl;
+              << n << (n == 1 ? " is" : " are") << " OXT\n"
+              << "residues with an OXT are:\n";
 
     // Loop over all atoms with atom-id "OXT" and print out some info.
     // That info is extracted using structured binding in C++
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
                 cif::key("label_atom_id") == "OXT",
                 "label_asym_id", "label_comp_id", "label_seq_id"))
     {
-        std::cout << asym << ' ' << comp << ' ' << seqnr << std::endl;
+        std::cout << asym << ' ' << comp << ' ' << seqnr << '\n';
     }
 
     return 0;
