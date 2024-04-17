@@ -1,3 +1,6 @@
+Version 7.0.5
+- Fix case where category index was not updated for updated value
+
 Version 7.0.4
 - Do not install headers and library in case we're not the top project
 

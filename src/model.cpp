@@ -2725,8 +2725,22 @@ void structure::cleanup_empty_categories()
 		obsoleteEntities.push_back(entity);
 	}
 
+	auto validator = m_db.get_validator();
+
 	for (auto entity : obsoleteEntities)
+	{
+		std::string entityID = entity["id"].as<std::string>();
+		if (validator)
+		{
+			for (auto linked : validator->get_links_for_parent("entity"))
+			{
+				if (auto cat = m_db.get(linked->m_child_category))
+					cat->erase(cif::key(linked->m_child_keys.front()) == entityID);
+			}
+		}
+
 		entities.erase(entity);
+	}
 
 	// the rest?
 
