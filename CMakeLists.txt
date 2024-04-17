@@ -41,8 +41,6 @@ include(GenerateExportHeader)
 include(CTest)
 include(FetchContent)
 
-message(STATUS "DESTDIR is '${DESTDIR}'")
-
 # When building with ninja-multiconfig, build both debug and release by default
 if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
 	set(CMAKE_CROSS_CONFIGS "Debug;Release")
