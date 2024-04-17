@@ -550,6 +550,9 @@ class residue
 	/// \brief Return true if this residue has alternate atoms
 	bool has_alternate_atoms() const;
 
+	/// \brief Return true if this residue has alternate atoms for the atom \a atomID
+	bool has_alternate_atoms_for(const std::string &atomID) const;
+
 	/// \brief Return the list of unique alt ID's present in this residue
 	std::set<std::string> get_alternate_ids() const;
 

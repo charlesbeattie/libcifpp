@@ -455,6 +455,12 @@ bool residue::has_alternate_atoms() const
 			   { return atom.is_alternate(); }) != m_atoms.end();
 }
 
+bool residue::has_alternate_atoms_for(const std::string &atomID) const
+{
+	return std::find_if(m_atoms.begin(), m_atoms.end(), [atomID](const atom &atom)
+			   { return atom.get_label_atom_id() == atomID and atom.is_alternate(); }) != m_atoms.end();
+}
+
 std::set<std::string> residue::get_atom_ids() const
 {
 	std::set<std::string> ids;
