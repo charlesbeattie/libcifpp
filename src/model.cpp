@@ -374,6 +374,7 @@ atom residue::create_new_atom(atom_type inType, const std::string &inAtomID, poi
 		{ "auth_atom_id", inAtomID },
 		{ "auth_comp_id", m_compound_id },
 		{ "auth_seq_id", m_auth_seq_id },
+		{ "occupancy", 1.0f, 2 },
 		{ "pdbx_PDB_model_num", m_structure->get_model_nr() },
 	});
 
