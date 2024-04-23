@@ -350,7 +350,12 @@ class atom
 	std::string get_pdb_ins_code() const { return get_property("pdbx_PDB_ins_code"); } ///< Return the pdb_ins_code property
 
 	/// Return true if this atom is an alternate
-	bool is_alternate() const { return not get_label_alt_id().empty(); }
+	bool is_alternate() const
+	{
+		if (auto alt_id = get_label_alt_id(); alt_id.empty() or alt_id == ".")
+			return false;
+		return true;
+	}
 
 	/// Convenience method to return a string that might be ID in PDB space
 	std::string pdb_id() const
@@ -575,6 +580,10 @@ class residue
 								   m_auth_seq_id == rhs.m_auth_seq_id);
 	}
 
+	/// @brief Create a new atom and add it to the list
+	/// @return newly created atom
+	virtual atom create_new_atom(atom_type inType, const std::string &inAtomID, point inLocation);
+
   protected:
 	/** @cond */
 	residue() {}
@@ -674,6 +683,8 @@ class monomer : public residue
 	{
 		return m_polymer == rhs.m_polymer and m_index == rhs.m_index;
 	}
+
+	atom create_new_atom(atom_type inType, const std::string &inAtomID, point inLocation) override;
 
   private:
 	const polymer *m_polymer;
@@ -1093,6 +1104,9 @@ class structure
 
 	/// \brief emplace the moved atom @a atom
 	atom &emplace_atom(atom &&atom);
+
+	/// \brief Reorder atom_site atoms based on 'natural' ordering
+	void reorder_atoms();
 
   private:
 	friend polymer;
