@@ -368,6 +368,7 @@ atom residue::create_new_atom(atom_type inType, const std::string &inAtomID, poi
 		{ "label_entity_id", get_entity_id() },
 		{ "label_atom_id", inAtomID },
 		{ "label_asym_id", m_asym_id },
+		{ "label_alt_id", "." },
 		{ "label_comp_id", m_compound_id },
 		{ "label_seq_id", m_seq_id },
 		{ "auth_asym_id", m_auth_asym_id },
@@ -2918,8 +2919,6 @@ void structure::reorder_atoms()
 			d = a.get<std::string>("label_asym_id").compare(b.get<std::string>("label_asym_id"));
 		if (d == 0)
 			d = a.get<int>("label_seq_id") - b.get<int>("label_seq_id");
-		if (d == 0)
-			d = a.get<std::string>("label_alt_id").compare(b.get<std::string>("label_alt_id"));
 		if (d == 0)
 			d = compare_numbers(a.get<std::string>("id"), b.get<std::string>("id"));
 
