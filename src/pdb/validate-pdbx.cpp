@@ -189,6 +189,7 @@ bool is_valid_pdbx_file(const file &file, std::string_view dictionary, std::erro
 				for (auto asym_id : struct_asym.find<std::string>("entity_id"_key == entity_id, "id"))
 				{
 					if (pdbx_poly_seq_scheme.count(
+							"entity_id"_key == entity_id and
 							"asym_id"_key == asym_id and
 							"mon_id"_key == mon_id and
 							"seq_id"_key == num and
@@ -202,6 +203,7 @@ bool is_valid_pdbx_file(const file &file, std::string_view dictionary, std::erro
 			for (const auto &[seq_id, mon_id, hetero] : pdbx_poly_seq_scheme.find<int, std::string, bool>("entity_id"_key == entity_id, "seq_id", "mon_id", "hetero"))
 			{
 				if (entity_poly_seq.count(
+						"entity_id"_key == entity_id and
 						"mon_id"_key == mon_id and
 						"num"_key == seq_id and
 						"hetero"_key == hetero) != 1)
