@@ -590,18 +590,18 @@ void checkAtomAnisotropRecords(datablock &db)
 			row["type_symbol"] = parent["type_symbol"].text();
 		}
 
-		if (row["pdbx_auth_alt_id"].empty())
+		if (row["pdbx_auth_alt_id"].empty() and not parent["pdbx_auth_alt_id"].empty())
 			row["pdbx_auth_alt_id"] = parent["pdbx_auth_alt_id"].text();
-		if (row["pdbx_label_seq_id"].empty())
+		if (row["pdbx_label_seq_id"].empty() and not parent["pdbx_label_seq_id"].empty())
 			row["pdbx_label_seq_id"] = parent["label_seq_id"].text();
-		if (row["pdbx_label_asym_id"].empty())
+		if (row["pdbx_label_asym_id"].empty() and not parent["pdbx_label_asym_id"].empty())
 			row["pdbx_label_asym_id"] = parent["label_asym_id"].text();
-		if (row["pdbx_label_atom_id"].empty())
+		if (row["pdbx_label_atom_id"].empty() and not parent["pdbx_label_atom_id"].empty())
 			row["pdbx_label_atom_id"] = parent["label_atom_id"].text();
-		if (row["pdbx_label_comp_id"].empty())
+		if (row["pdbx_label_comp_id"].empty() and not parent["pdbx_label_comp_id"].empty())
 			row["pdbx_label_comp_id"] = parent["label_comp_id"].text();
-		if (row["pdbx_PDB_model_num"].empty())
-			row["pdbx_PDB_model_num"] = parent["pdbx_PDB_model_num"].text();
+		// if (row["pdbx_PDB_model_num"].empty() and not parent["pdbx_PDB_model_num"].empty())
+		// 	row["pdbx_PDB_model_num"] = parent["pdbx_PDB_model_num"].text();
 	}
 
 	if (not to_be_deleted.empty())

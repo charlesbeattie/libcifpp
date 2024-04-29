@@ -2886,7 +2886,7 @@ static int compare_numbers(std::string_view a, std::string_view b)
 	ra = selected_charconv<double>::from_chars(a.data(), a.data() + a.length(), da);
 	rb = selected_charconv<double>::from_chars(b.data(), b.data() + b.length(), db);
 
-	if (not (bool)ra.ec and not (bool)rb.ec)
+	if (not(bool) ra.ec and not(bool) rb.ec)
 	{
 		auto d = da - db;
 		if (std::abs(d) > std::numeric_limits<double>::epsilon())
@@ -2901,7 +2901,7 @@ static int compare_numbers(std::string_view a, std::string_view b)
 		result = 1;
 	else
 		result = -1;
-	
+
 	return result;
 }
 
@@ -2910,26 +2910,51 @@ void structure::reorder_atoms()
 	auto &atom_site = m_db["atom_site"];
 
 	atom_site.sort([](row_handle a, row_handle b)
-	{
-		int d;
+		{
+			int d;
 
-		// First by model number
-		d = a.get<int>("pdbx_PDB_model_num") - b.get<int>("pdbx_PDB_model_num");
-		if (d == 0)
-			d = a.get<std::string>("label_asym_id").compare(b.get<std::string>("label_asym_id"));
-		if (d == 0)
-			d = a.get<int>("label_seq_id") - b.get<int>("label_seq_id");
-		if (d == 0)
-			d = compare_numbers(a.get<std::string>("id"), b.get<std::string>("id"));
+			// First by model number
+			d = a.get<int>("pdbx_PDB_model_num") - b.get<int>("pdbx_PDB_model_num");
+			if (d == 0)
+				d = a.get<std::string>("label_asym_id").compare(b.get<std::string>("label_asym_id"));
+			if (d == 0)
+			{
+				auto na = a.get<std::optional<int>>("label_seq_id");
+				auto nb = b.get<std::optional<int>>("label_seq_id");
 
-		return d;
-	});
+				if (na.has_value() and nb.has_value())
+					d = *na - *nb;
+				else if (na.has_value())
+					d = 1;
+				else if (nb.has_value())
+					d = -1;
+			}
+
+			if (d == 0)
+			{
+				auto na = a.get<std::optional<int>>("auth_seq_id");
+				auto nb = b.get<std::optional<int>>("auth_seq_id");
+
+				if (na.has_value() and nb.has_value())
+					d = *na - *nb;
+				else if (na.has_value())
+					d = 1;
+				else if (nb.has_value())
+					d = -1;
+			}
+
+			if (d == 0)
+				d = compare_numbers(a.get<std::string>("id"), b.get<std::string>("id"));
+
+			return d;
+			//
+		});
 
 	// atom_site.set_validator(nullptr, m_db);
 
 	// for (int nr = 1; auto r : atom_site)
 	// 	r["id"] = nr++;
-	
+
 	// atom_site.set_validator(m_db.get_validator(), m_db);
 }
 
