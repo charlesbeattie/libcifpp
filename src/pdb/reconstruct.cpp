@@ -144,9 +144,11 @@ void checkEntities(datablock &db)
 			if (comp_id.has_value())
 			{
 				auto compound = cf.create(*comp_id);
-				assert(compound);
 				if (not compound)
-					throw std::runtime_error("missing information for compound " + *comp_id);
+				{
+					std::cerr << "missing information for compound " << *comp_id << "\n";
+					continue;
+				}
 				formula_weight = compound->formula_weight();
 			}
 		}
@@ -416,6 +418,8 @@ void checkAtomRecords(datablock &db)
 	for (int id : db["entity"].find<int>("type"_key == "polymer", "id"))
 		polymer_entities.insert(id);
 
+	std::set<std::string> missingCompounds;
+
 	for (auto row : atom_site)
 	{
 		residue_key_type k = row.get<std::optional<std::string>,
@@ -446,11 +450,18 @@ void checkAtomRecords(datablock &db)
 		std::string asym_id = get_asym_id(k);
 		std::string comp_id = get_comp_id(k);
 
+		if (missingCompounds.contains(comp_id))
+			continue;
+
 		bool is_polymer = polymer_entities.contains(row["label_entity_id"].as<int>());
 		auto compound = cf.create(comp_id);
 
 		if (not compound)
-			throw std::runtime_error("Missing compound information for " + comp_id);
+		{
+			missingCompounds.insert(comp_id);
+			std::cerr << "Missing compound information for " << comp_id << "\n";
+			continue;
+		}
 
 		auto chem_comp_entry = chem_comp.find_first("id"_key == comp_id);
 
