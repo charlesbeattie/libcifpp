@@ -138,7 +138,7 @@ struct compound_bond
 /// This information is derived from the CDD by default.
 ///
 /// To create compounds, you use the factory method. You can add your own
-/// compound definitions by calling the addExtraComponents function and
+/// compound definitions by calling the push_dictionary function and
 /// pass it a valid CCD formatted file.
 
 class compound
