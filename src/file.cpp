@@ -31,11 +31,32 @@ namespace cif
 {
 
 // --------------------------------------------------------------------
+// TODO: This is wrong. A validator should be assigned to datablocks,
+// not to a file. Since audit_conform is a category specifying the
+// content of a datablock. Not the entire file.
+
 void file::set_validator(const validator *v)
 {
 	m_validator = v;
-	for (auto &db : *this)
-		db.set_validator(v);
+	for (bool first = true; auto &db : *this)
+	{
+		try
+		{
+			db.set_validator(v);
+		}
+		catch (const std::exception &e)
+		{
+			if (first)
+				throw;
+
+			// Accept failure on secondary datablocks
+			// now that many mmCIF files have invalid
+			// restraint data concatenated.
+			std::cerr << e.what() << '\n';
+		}
+
+		first = false;
+	}
 }
 
 bool file::is_valid() const
@@ -78,12 +99,12 @@ bool file::validate_links() const
 {
 	if (m_validator == nullptr)
 		std::runtime_error("No validator loaded explicitly, cannot continue");
-	
+
 	bool result = true;
 
 	for (auto &db : *this)
 		result = db.validate_links() and result;
-	
+
 	return result;
 }
 
@@ -97,7 +118,7 @@ void file::load_dictionary()
 			std::string name = audit_conform->front().get<std::string>("dict_name");
 
 			if (name == "mmcif_pdbx_v50")
-				name = "mmcif_pdbx.dic";	// we had a bug here in libcifpp... 
+				name = "mmcif_pdbx.dic"; // we had a bug here in libcifpp...
 
 			if (not name.empty())
 			{
@@ -125,7 +146,8 @@ void file::load_dictionary(std::string_view name)
 
 bool file::contains(std::string_view name) const
 {
-	return std::find_if(begin(), end(), [name](const datablock &db) { return iequals(db.name(), name); }) != end();
+	return std::find_if(begin(), end(), [name](const datablock &db)
+			   { return iequals(db.name(), name); }) != end();
 }
 
 datablock &file::operator[](std::string_view name)
