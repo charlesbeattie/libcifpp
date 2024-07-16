@@ -822,6 +822,18 @@ void createEntityPoly(datablock &db)
 
 					non_std_monomer = true;
 				}
+				else
+				{
+					// c_type = "other";
+
+					letter_can = c->one_letter_code();
+					if (letter_can == 0)
+						letter_can = 'X';
+
+					letter = '(' + comp_id + ')';
+
+					non_std_monomer = true;
+				}
 
 				if (type.empty())
 					type = c_type;
@@ -888,7 +900,7 @@ void createEntityPoly(datablock &db)
 
 void createEntityPolySeq(datablock &db)
 {
-	if (db.get("entity_poly") == nullptr)
+	if (auto cat = db.get("entity_poly"); cat == nullptr or cat->empty())
 		createEntityPoly(db);
 
 	using namespace literals;
@@ -939,7 +951,10 @@ void createEntityPolySeq(datablock &db)
 
 void createPdbxPolySeqScheme(datablock &db)
 {
-	if (db.get("entity_poly_seq") == nullptr)
+	if (auto cat = db.get("entity_poly"); cat == nullptr or cat->empty())
+		createEntityPoly(db);
+
+	if (auto cat = db.get("entity_poly_seq"); cat == nullptr or cat->empty())
 		createEntityPolySeq(db);
 
 	using namespace literals;
@@ -1076,7 +1091,7 @@ bool reconstruct_pdbx(file &file, std::string_view dictionary)
 	// ... and any additional datablock will contain compound information
 	cif::compound_source cs(file);
 
-	if (db.get("atom_site") == nullptr)
+	if (auto cat = db.get("atom_site"); cat == nullptr or cat->empty())
 		throw std::runtime_error("Cannot reconstruct PDBx file, atom data missing");
 
 	auto &validator = validator_factory::instance()[dictionary];
@@ -1084,7 +1099,7 @@ bool reconstruct_pdbx(file &file, std::string_view dictionary)
 	std::string entry_id;
 
 	// Phenix files do not have an entry record
-	if (db.get("entry") == nullptr)
+	if (auto cat = db.get("entry"); cat == nullptr or cat->empty())
 	{
 		entry_id = db.name();
 		category entry("entry");
@@ -1338,19 +1353,19 @@ bool reconstruct_pdbx(file &file, std::string_view dictionary)
 
 	// Now create any missing categories
 	// Next make sure we have struct_asym records
-	if (db.get("struct_asym") == nullptr)
+	if (auto cat = db.get("struct_asym"); cat == nullptr or cat->empty())
 		createStructAsym(db);
 
-	if (db.get("entity") == nullptr)
+	if (auto cat = db.get("entity"); cat == nullptr or cat->empty())
 		createEntity(db);
 
 	// fill in missing formula_weight, e.g.
 	checkEntities(db);
 
-	if (db.get("pdbx_poly_seq_scheme") == nullptr)
+	if (auto cat = db.get("pdbx_poly_seq_scheme"); cat == nullptr or cat->empty())
 		createPdbxPolySeqScheme(db);
 
-	if (db.get("ndb_poly_seq_scheme") != nullptr)
+	if (auto cat = db.get("ndb_poly_seq_scheme"); cat == nullptr or cat->empty())
 		comparePolySeqSchemes(db);
 
 	// skip unknown categories for now

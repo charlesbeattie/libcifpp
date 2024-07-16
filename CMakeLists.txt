@@ -256,6 +256,8 @@ if(CIFPP_RECREATE_SYMOP_DATA)
 	add_executable(symop-map-generator
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/symop-map-generator.cpp")
 
+	target_compile_features(symop-map-generator PUBLIC cxx_std_20)
+
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/symop_table_data.hpp
 		COMMAND
