@@ -1292,9 +1292,9 @@ template <typename T>
 condition operator!=(const key &key, const std::optional<T> &v)
 {
 	if (v.has_value())
-		return condition(new detail::not_condition_impl(condition{new detail::key_equals_condition_impl({ key.m_item_name, *v })}));
+		return condition(new detail::not_condition_impl(condition(new detail::key_equals_condition_impl({ key.m_item_name, *v }))));
 	else
-		return condition(new detail::not_condition_impl(condition{new detail::key_is_empty_condition_impl(key.m_item_name)}));
+		return condition(new detail::not_condition_impl(condition(new detail::key_is_empty_condition_impl(key.m_item_name))));
 }
 
 /**

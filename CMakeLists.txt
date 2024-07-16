@@ -32,6 +32,7 @@ project(
 
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+include(FindAtomic)
 include(CheckFunctionExists)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
@@ -366,7 +367,7 @@ target_include_directories(
 	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 	PRIVATE "${BOOST_REGEX_INCLUDE_DIR}" "${EIGEN_INCLUDE_DIR}")
 
-target_link_libraries(cifpp PUBLIC Threads::Threads ZLIB::ZLIB)
+target_link_libraries(cifpp PUBLIC Threads::Threads ZLIB::ZLIB std::atomic)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 	target_link_options(cifpp PRIVATE -undefined dynamic_lookup)
