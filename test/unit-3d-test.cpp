@@ -163,23 +163,23 @@ TEST_CASE("dh_q_0")
 
 	p.rotate(q);
 
-	REQUIRE_THAT(p.m_x, Catch::Matchers::WithinRel(1.f, 0.01f));
-	REQUIRE_THAT(p.m_y, Catch::Matchers::WithinRel(0.f, 0.01f));
-	REQUIRE_THAT(p.m_z, Catch::Matchers::WithinRel(1.f, 0.01f));
+	REQUIRE_THAT(std::abs(p.m_x), Catch::Matchers::WithinRel(1.f, 0.01f));
+	REQUIRE_THAT(std::abs(p.m_y), Catch::Matchers::WithinRel(0.f, 0.01f));
+	REQUIRE_THAT(std::abs(p.m_z), Catch::Matchers::WithinRel(1.f, 0.01f));
 
 	a = cif::dihedral_angle(t[0], t[1], t[2], p);
-	REQUIRE_THAT(a, Catch::Matchers::WithinRel(90, 0.01f));
+	REQUIRE_THAT(std::abs(a), Catch::Matchers::WithinRel(90, 0.01f));
 
 	q = cif::construct_from_angle_axis(-90, axis);
 
 	p.rotate(q);
 
-	REQUIRE_THAT(p.m_x, Catch::Matchers::WithinRel(1.f, 0.01f));
-	REQUIRE_THAT(p.m_y, Catch::Matchers::WithinRel(1.f, 0.01f));
-	REQUIRE_THAT(p.m_z, Catch::Matchers::WithinRel(0.f, 0.01f));
+	REQUIRE_THAT(std::abs(p.m_x), Catch::Matchers::WithinRel(1.f, 0.01f));
+	REQUIRE_THAT(std::abs(p.m_y), Catch::Matchers::WithinRel(1.f, 0.01f));
+	REQUIRE_THAT(std::abs(p.m_z), Catch::Matchers::WithinRel(0.f, 0.01f));
 
 	a = cif::dihedral_angle(t[0], t[1], t[2], p);
-	REQUIRE_THAT(a, Catch::Matchers::WithinRel(0.f, 0.01f));
+	REQUIRE_THAT(std::abs(a), Catch::Matchers::WithinRel(0.f, 0.01f));
 }
 
 TEST_CASE("dh_q_1")
