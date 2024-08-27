@@ -1697,6 +1697,12 @@ void category::swap_item(uint16_t item_ix, row_handle &a, row_handle &b)
 	auto &ra = *a.m_row;
 	auto &rb = *b.m_row;
 
+	while (ra.size() <= item_ix)
+		ra.emplace_back("");
+
+	while (rb.size() <= item_ix)
+		rb.emplace_back("");
+
 	std::swap(ra.at(item_ix), rb.at(item_ix));
 }
 
