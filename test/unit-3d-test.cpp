@@ -157,7 +157,7 @@ TEST_CASE("dh_q_0")
 	};
 
 	auto a = cif::dihedral_angle(t[0], t[1], t[2], p);
-	REQUIRE_THAT(a, Catch::Matchers::WithinRel(0, 0.01f));
+	REQUIRE_THAT(a, Catch::Matchers::WithinRel(0.f, 0.01f));
 
 	auto q = cif::construct_from_angle_axis(90, axis);
 

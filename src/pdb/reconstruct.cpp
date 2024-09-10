@@ -144,9 +144,11 @@ void checkEntities(datablock &db)
 			if (comp_id.has_value())
 			{
 				auto compound = cf.create(*comp_id);
-				assert(compound);
 				if (not compound)
-					throw std::runtime_error("missing information for compound " + *comp_id);
+				{
+					std::cerr << "missing information for compound " << *comp_id << "\n";
+					continue;
+				}
 				formula_weight = compound->formula_weight();
 			}
 		}
@@ -416,6 +418,8 @@ void checkAtomRecords(datablock &db)
 	for (int id : db["entity"].find<int>("type"_key == "polymer", "id"))
 		polymer_entities.insert(id);
 
+	std::set<std::string> missingCompounds;
+
 	for (auto row : atom_site)
 	{
 		residue_key_type k = row.get<std::optional<std::string>,
@@ -446,11 +450,18 @@ void checkAtomRecords(datablock &db)
 		std::string asym_id = get_asym_id(k);
 		std::string comp_id = get_comp_id(k);
 
+		if (missingCompounds.contains(comp_id))
+			continue;
+
 		bool is_polymer = polymer_entities.contains(row["label_entity_id"].as<int>());
 		auto compound = cf.create(comp_id);
 
 		if (not compound)
-			throw std::runtime_error("Missing compound information for " + comp_id);
+		{
+			missingCompounds.insert(comp_id);
+			std::cerr << "Missing compound information for " << comp_id << "\n";
+			continue;
+		}
 
 		auto chem_comp_entry = chem_comp.find_first("id"_key == comp_id);
 
@@ -590,18 +601,18 @@ void checkAtomAnisotropRecords(datablock &db)
 			row["type_symbol"] = parent["type_symbol"].text();
 		}
 
-		if (row["pdbx_auth_alt_id"].empty())
+		if (row["pdbx_auth_alt_id"].empty() and not parent["pdbx_auth_alt_id"].empty())
 			row["pdbx_auth_alt_id"] = parent["pdbx_auth_alt_id"].text();
-		if (row["pdbx_label_seq_id"].empty())
+		if (row["pdbx_label_seq_id"].empty() and not parent["pdbx_label_seq_id"].empty())
 			row["pdbx_label_seq_id"] = parent["label_seq_id"].text();
-		if (row["pdbx_label_asym_id"].empty())
+		if (row["pdbx_label_asym_id"].empty() and not parent["pdbx_label_asym_id"].empty())
 			row["pdbx_label_asym_id"] = parent["label_asym_id"].text();
-		if (row["pdbx_label_atom_id"].empty())
+		if (row["pdbx_label_atom_id"].empty() and not parent["pdbx_label_atom_id"].empty())
 			row["pdbx_label_atom_id"] = parent["label_atom_id"].text();
-		if (row["pdbx_label_comp_id"].empty())
+		if (row["pdbx_label_comp_id"].empty() and not parent["pdbx_label_comp_id"].empty())
 			row["pdbx_label_comp_id"] = parent["label_comp_id"].text();
-		if (row["pdbx_PDB_model_num"].empty())
-			row["pdbx_PDB_model_num"] = parent["pdbx_PDB_model_num"].text();
+		// if (row["pdbx_PDB_model_num"].empty() and not parent["pdbx_PDB_model_num"].empty())
+		// 	row["pdbx_PDB_model_num"] = parent["pdbx_PDB_model_num"].text();
 	}
 
 	if (not to_be_deleted.empty())
@@ -811,6 +822,18 @@ void createEntityPoly(datablock &db)
 
 					non_std_monomer = true;
 				}
+				else
+				{
+					// c_type = "other";
+
+					letter_can = c->one_letter_code();
+					if (letter_can == 0)
+						letter_can = 'X';
+
+					letter = '(' + comp_id + ')';
+
+					non_std_monomer = true;
+				}
 
 				if (type.empty())
 					type = c_type;
@@ -877,7 +900,7 @@ void createEntityPoly(datablock &db)
 
 void createEntityPolySeq(datablock &db)
 {
-	if (db.get("entity_poly") == nullptr)
+	if (auto cat = db.get("entity_poly"); cat == nullptr or cat->empty())
 		createEntityPoly(db);
 
 	using namespace literals;
@@ -928,7 +951,10 @@ void createEntityPolySeq(datablock &db)
 
 void createPdbxPolySeqScheme(datablock &db)
 {
-	if (db.get("entity_poly_seq") == nullptr)
+	if (auto cat = db.get("entity_poly"); cat == nullptr or cat->empty())
+		createEntityPoly(db);
+
+	if (auto cat = db.get("entity_poly_seq"); cat == nullptr or cat->empty())
 		createEntityPolySeq(db);
 
 	using namespace literals;
@@ -1065,7 +1091,7 @@ bool reconstruct_pdbx(file &file, std::string_view dictionary)
 	// ... and any additional datablock will contain compound information
 	cif::compound_source cs(file);
 
-	if (db.get("atom_site") == nullptr)
+	if (auto cat = db.get("atom_site"); cat == nullptr or cat->empty())
 		throw std::runtime_error("Cannot reconstruct PDBx file, atom data missing");
 
 	auto &validator = validator_factory::instance()[dictionary];
@@ -1073,7 +1099,7 @@ bool reconstruct_pdbx(file &file, std::string_view dictionary)
 	std::string entry_id;
 
 	// Phenix files do not have an entry record
-	if (db.get("entry") == nullptr)
+	if (auto cat = db.get("entry"); cat == nullptr or cat->empty())
 	{
 		entry_id = db.name();
 		category entry("entry");
@@ -1327,19 +1353,19 @@ bool reconstruct_pdbx(file &file, std::string_view dictionary)
 
 	// Now create any missing categories
 	// Next make sure we have struct_asym records
-	if (db.get("struct_asym") == nullptr)
+	if (auto cat = db.get("struct_asym"); cat == nullptr or cat->empty())
 		createStructAsym(db);
 
-	if (db.get("entity") == nullptr)
+	if (auto cat = db.get("entity"); cat == nullptr or cat->empty())
 		createEntity(db);
 
 	// fill in missing formula_weight, e.g.
 	checkEntities(db);
 
-	if (db.get("pdbx_poly_seq_scheme") == nullptr)
+	if (auto cat = db.get("pdbx_poly_seq_scheme"); cat == nullptr or cat->empty())
 		createPdbxPolySeqScheme(db);
 
-	if (db.get("ndb_poly_seq_scheme") != nullptr)
+	if (auto cat = db.get("ndb_poly_seq_scheme"); cat == nullptr or cat->empty())
 		comparePolySeqSchemes(db);
 
 	// skip unknown categories for now

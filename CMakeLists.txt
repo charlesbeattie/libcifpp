@@ -27,11 +27,12 @@ cmake_minimum_required(VERSION 3.23)
 # set the project name
 project(
 	libcifpp
-	VERSION 7.0.4
+	VERSION 7.0.5
 	LANGUAGES CXX)
 
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+include(FindAtomic)
 include(CheckFunctionExists)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
@@ -40,8 +41,6 @@ include(CheckCXXSourceCompiles)
 include(GenerateExportHeader)
 include(CTest)
 include(FetchContent)
-
-message(STATUS "DESTDIR is '${DESTDIR}'")
 
 # When building with ninja-multiconfig, build both debug and release by default
 if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
@@ -188,10 +187,6 @@ if(GXX_LIBSTDCPP)
 	endif()
 endif()
 
-set(CMAKE_THREAD_PREFER_PTHREAD)
-set(THREADS_PREFER_PTHREAD_FLAG)
-find_package(Threads)
-
 if(MSVC)
 	# Avoid linking the shared library of zlib Search ZLIB_ROOT first if it is
 	# set.
@@ -221,6 +216,7 @@ if(MSVC)
 endif()
 
 find_package(ZLIB QUIET)
+find_package(Threads)
 
 if(NOT ZLIB_FOUND)
 	message(FATAL_ERROR "The zlib development files were not found you this system, please install them and try again (hint: on debian/ubuntu use apt-get install zlib1g-dev)")
@@ -259,6 +255,8 @@ if(CIFPP_RECREATE_SYMOP_DATA)
 	# The tool to create the table
 	add_executable(symop-map-generator
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/symop-map-generator.cpp")
+
+	target_compile_features(symop-map-generator PUBLIC cxx_std_20)
 
 	add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/symop_table_data.hpp
@@ -331,7 +329,7 @@ set(project_headers
 	include/cif++/validate.hpp
 )
 
-add_library(cifpp STATIC)
+add_library(cifpp)
 add_library(cifpp::cifpp ALIAS cifpp)
 
 target_sources(cifpp
@@ -371,7 +369,7 @@ target_include_directories(
 	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 	PRIVATE "${BOOST_REGEX_INCLUDE_DIR}" "${EIGEN_INCLUDE_DIR}")
 
-target_link_libraries(cifpp PUBLIC Threads::Threads ZLIB::ZLIB)
+target_link_libraries(cifpp PUBLIC Threads::Threads ZLIB::ZLIB std::atomic)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 	target_link_options(cifpp PRIVATE -undefined dynamic_lookup)
@@ -444,6 +442,10 @@ if(CIFPP_DATA_DIR)
 	target_compile_definitions(cifpp PUBLIC DATA_DIR="${CIFPP_DATA_DIR}")
 endif()
 
+if(NOT PROJECT_IS_TOP_LEVEL)
+	set(CIFPP_SHARE_DIR ${CIFPP_DATA_DIR} PARENT_SCOPE)
+endif()
+
 if(UNIX AND NOT BUILD_FOR_CCP4)
 	if("${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr/local")
 		set(CIFPP_CACHE_DIR
@@ -464,75 +466,72 @@ else()
 	unset(CIFPP_CACHE_DIR)
 endif()
 
-# Avoid full installation in case we are not the top level target
-if(PROJECT_IS_TOP_LEVEL OR BUILD_FOR_CCP4)
-	# Install rules
-	install(TARGETS cifpp
-		EXPORT cifpp
-		FILE_SET cifpp_headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# Install rules
+install(TARGETS cifpp
+	EXPORT cifpp
+	FILE_SET cifpp_headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-	if(MSVC AND BUILD_SHARED_LIBS)
-		install(
-			FILES $<TARGET_PDB_FILE:cifpp>
-			DESTINATION ${CMAKE_INSTALL_LIBDIR}
-			OPTIONAL)
-	endif()
-
-	# Clean up old config files (with old names)
-	file(GLOB OLD_CONFIG_FILES
-		${CMAKE_INSTALL_FULL_LIBDIR}/cmake/cifpp/cifppConfig*.cmake
-		${CMAKE_INSTALL_FULL_LIBDIR}/cmake/cifpp/cifppTargets*.cmake)
-
-	if(OLD_CONFIG_FILES)
-		message(
-			STATUS "Installation will remove old config files: ${OLD_CONFIG_FILES}")
-		install(CODE "file(REMOVE ${OLD_CONFIG_FILES})")
-	endif()
-
-	install(EXPORT cifpp
-		NAMESPACE cifpp::
-		FILE "cifpp-targets.cmake"
-		DESTINATION lib/cmake/cifpp)
-
-	if(CIFPP_DATA_DIR AND CIFPP_DOWNLOAD_CCD)
-		install(
-			FILES ${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ddl.dic
-			${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_pdbx.dic
-			${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ma.dic ${COMPONENTS_CIF}
-			DESTINATION ${CMAKE_INSTALL_DATADIR}/libcifpp)
-	endif()
-
-	set(CONFIG_TEMPLATE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cifpp-config.cmake.in)
-
-	configure_package_config_file(
-		${CONFIG_TEMPLATE_FILE} ${CMAKE_CURRENT_BINARY_DIR}/cifpp/cifpp-config.cmake
-		INSTALL_DESTINATION lib/cmake/cifpp
-		PATH_VARS CIFPP_DATA_DIR)
-
+if(MSVC AND BUILD_SHARED_LIBS)
 	install(
-		FILES "${CMAKE_CURRENT_BINARY_DIR}/cifpp/cifpp-config.cmake"
-		"${CMAKE_CURRENT_BINARY_DIR}/cifpp/cifpp-config-version.cmake"
-		DESTINATION lib/cmake/cifpp)
-
-	set_target_properties(
-		cifpp
-		PROPERTIES VERSION ${PROJECT_VERSION}
-		SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
-		INTERFACE_cifpp_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
-
-	set_property(
-		TARGET cifpp
-		APPEND
-		PROPERTY COMPATIBLE_INTERFACE_STRING cifpp_MAJOR_VERSION)
-
-	write_basic_package_version_file(
-		"${CMAKE_CURRENT_BINARY_DIR}/cifpp/cifpp-config-version.cmake"
-		VERSION ${PROJECT_VERSION}
-		COMPATIBILITY AnyNewerVersion)
-else()
-	# Set this variable so that consumers can find the files in rsrc
-	set(CIFPP_SHARE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rsrc PARENT_SCOPE)
+		FILES $<TARGET_PDB_FILE:cifpp>
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		OPTIONAL)
 endif()
+
+# Clean up old config files (with old names)
+file(GLOB OLD_CONFIG_FILES
+	${CMAKE_INSTALL_FULL_LIBDIR}/cmake/cifpp/cifppConfig*.cmake
+	${CMAKE_INSTALL_FULL_LIBDIR}/cmake/cifpp/cifppTargets*.cmake)
+
+if(OLD_CONFIG_FILES)
+	message(
+		STATUS "Installation will remove old config files: ${OLD_CONFIG_FILES}")
+	install(CODE "file(REMOVE ${OLD_CONFIG_FILES})")
+endif()
+
+install(EXPORT cifpp
+	NAMESPACE cifpp::
+	FILE "cifpp-targets.cmake"
+	DESTINATION lib/cmake/cifpp)
+
+install(
+	FILES ${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ddl.dic
+	${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_pdbx.dic
+	${CMAKE_CURRENT_SOURCE_DIR}/rsrc/mmcif_ma.dic
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/libcifpp)
+
+if(CIFPP_DATA_DIR AND CIFPP_DOWNLOAD_CCD)
+	install(FILES ${COMPONENTS_CIF}
+		DESTINATION ${CMAKE_INSTALL_DATADIR}/libcifpp)
+endif()
+
+set(CONFIG_TEMPLATE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cifpp-config.cmake.in)
+
+configure_package_config_file(
+	${CONFIG_TEMPLATE_FILE} ${CMAKE_CURRENT_BINARY_DIR}/cifpp/cifpp-config.cmake
+	INSTALL_DESTINATION lib/cmake/cifpp
+	PATH_VARS CIFPP_DATA_DIR)
+
+install(
+	FILES "${CMAKE_CURRENT_BINARY_DIR}/cifpp/cifpp-config.cmake"
+	"${CMAKE_CURRENT_BINARY_DIR}/cifpp/cifpp-config-version.cmake"
+	DESTINATION lib/cmake/cifpp)
+
+set_target_properties(
+	cifpp
+	PROPERTIES VERSION ${PROJECT_VERSION}
+	SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+	INTERFACE_cifpp_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
+
+set_property(
+	TARGET cifpp
+	APPEND
+	PROPERTY COMPATIBLE_INTERFACE_STRING cifpp_MAJOR_VERSION)
+
+write_basic_package_version_file(
+	"${CMAKE_CURRENT_BINARY_DIR}/cifpp/cifpp-config-version.cmake"
+	VERSION ${PROJECT_VERSION}
+	COMPATIBILITY AnyNewerVersion)
 
 if(BUILD_TESTING)
 	add_subdirectory(test)

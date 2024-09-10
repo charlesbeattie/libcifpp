@@ -235,7 +235,7 @@ void progress_bar_impl::print_progress()
 	float progress = static_cast<float>(m_consumed) / m_max_value;
 	
 	if (width < kMinBarWidth)
-		std::cout << (100 * progress) << '%' << std::endl;
+		std::cout << (100 * progress) << "%\n";
 	else
 	{
 		uint32_t bar_width = 7 * width / 10;
@@ -329,7 +329,7 @@ void progress_bar_impl::print_done()
 	if (msg.length() < width)
 		msg += std::string(width - msg.length(), ' ');
 
-	std::cout << '\r' << msg << std::endl;
+	std::cout << '\r' << msg << '\n';
 }
 
 progress_bar::progress_bar(int64_t inMax, const std::string &inAction)

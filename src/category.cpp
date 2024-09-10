@@ -1321,7 +1321,7 @@ void category::update_value(const std::vector<row_handle> &rows, std::string_vie
 		std::string oldValue{ parent[item_name].text() };
 		std::string value{ value_provider(oldValue) };
 
-		parent.assign(colIx, value, false);
+		update_value(parent.get_row(), colIx, value, false, false);
 
 		for (auto &&[childCat, linked] : m_child_links)
 		{
@@ -1444,8 +1444,7 @@ void category::update_value(row *row, uint16_t item, std::string_view value, boo
 	// before updating
 
 	bool reinsert = false;
-	if (updateLinked and // an update of an Item's value
-		m_index != nullptr and key_item_indices().count(item))
+	if (m_index != nullptr and key_item_indices().count(item))
 	{
 		reinsert = m_index->find(*this, row);
 		if (reinsert)
@@ -1697,6 +1696,12 @@ void category::swap_item(uint16_t item_ix, row_handle &a, row_handle &b)
 
 	auto &ra = *a.m_row;
 	auto &rb = *b.m_row;
+
+	while (ra.size() <= item_ix)
+		ra.emplace_back("");
+
+	while (rb.size() <= item_ix)
+		rb.emplace_back("");
 
 	std::swap(ra.at(item_ix), rb.at(item_ix));
 }

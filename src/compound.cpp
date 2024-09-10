@@ -496,7 +496,7 @@ compound *compound_factory_impl::create(const std::string &id)
 		m_index = parser.index_datablocks();
 
 		if (cif::VERBOSE > 1)
-			std::cout << " done" << std::endl;
+			std::cout << " done\n";
 
 		// reload the resource, perhaps this should be improved...
 		if (m_file.empty())
@@ -519,7 +519,7 @@ compound *compound_factory_impl::create(const std::string &id)
 	parser.parse_single_datablock(id, m_index);
 
 	if (cif::VERBOSE > 1)
-		std::cout << " done" << std::endl;
+		std::cout << " done\n";
 
 	if (not file.empty())
 	{
@@ -545,20 +545,20 @@ class local_compound_factory_impl : public compound_factory_impl
 		: compound_factory_impl(next)
 		, m_local_file(file)
 	{
-		const std::regex peptideRx("(?:[lmp]-)?peptide", std::regex::icase);
+		// const std::regex peptideRx("(?:[lmp]-)?peptide", std::regex::icase);
 
-		for (const auto &[id, name, threeLetterCode, group] :
-			file["comp_list"]["chem_comp"].rows<std::string, std::string, std::string, std::string>("id", "name", "three_letter_code", "group"))
-		{
-			auto &rdb = m_local_file["comp_" + id];
-			if (rdb.empty())
-			{
-				std::cerr << "Missing data in restraint file for id " + id + '\n';
-				continue;
-			}
+		// for (const auto &[id, name, threeLetterCode, group] :
+		// 	file["comp_list"]["chem_comp"].rows<std::string, std::string, std::string, std::string>("id", "name", "three_letter_code", "group"))
+		// {
+		// 	auto &rdb = m_local_file["comp_" + id];
+		// 	if (rdb.empty())
+		// 	{
+		// 		// std::cerr << "Missing data in restraint file for id " + id + '\n';
+		// 		continue;
+		// 	}
 
-			construct_compound(rdb, id, name, threeLetterCode, group);
-		}
+		// 	construct_compound(rdb, id, name, threeLetterCode, group);
+		// }
 	}
 
 	compound *create(const std::string &id) override;

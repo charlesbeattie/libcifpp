@@ -378,7 +378,7 @@ struct item_handle
 	template <typename T>
 	item_handle &operator=(T &&value)
 	{
-		assign_value(item{ "", std::move(value) }.value());
+		assign_value(item{ "", std::forward<T>(value) }.value());
 		return *this;
 	}
 

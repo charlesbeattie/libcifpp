@@ -1285,6 +1285,19 @@ condition operator==(const key &key, const std::optional<T> &v)
 }
 
 /**
+ * @brief Create a condition to search any item for a value @a v if @a v contains a value
+ * compare to null if not.
+ */
+template <typename T>
+condition operator!=(const key &key, const std::optional<T> &v)
+{
+	if (v.has_value())
+		return condition(new detail::not_condition_impl(condition(new detail::key_equals_condition_impl({ key.m_item_name, *v }))));
+	else
+		return condition(new detail::not_condition_impl(condition(new detail::key_is_empty_condition_impl(key.m_item_name))));
+}
+
+/**
  * @brief Operator to create a boolean opposite of the condition in @a rhs
  */
 inline condition operator not(condition &&rhs)

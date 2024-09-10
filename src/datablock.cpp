@@ -49,6 +49,7 @@ void datablock::set_validator(const validator *v)
 	}
 	catch (const std::exception &)
 	{
+		m_validator = nullptr;
 		throw_with_nested(std::runtime_error("Error while setting validator in datablock " + m_name));
 	}
 }
