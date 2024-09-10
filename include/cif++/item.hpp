@@ -608,6 +608,8 @@ struct item_handle::item_value_as<T, std::enable_if_t<std::is_arithmetic_v<T> an
 				}
 				result = 1;
 			}
+			else if (std::abs(v - value) <= std::numeric_limits<value_type>::epsilon())
+				result = 0;
 			else if (v < value)
 				result = -1;
 			else if (v > value)
