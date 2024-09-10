@@ -378,7 +378,7 @@ std::from_chars_result from_chars(const char *first, const char *last, FloatType
 	} state = IntegerSign;
 	int sign = 1;
 	unsigned long long vi = 0;
-	long double f = 1;
+	int fl = 0, tz = 0;
 	int exponent_sign = 1;
 	int exponent = 0;
 	bool done = false;
@@ -427,7 +427,14 @@ std::from_chars_result from_chars(const char *first, const char *last, FloatType
 				if (ch >= '0' and ch <= '9')
 				{
 					vi = 10 * vi + (ch - '0');
-					f /= 10;
+
+					if (ch == '0')
+						tz += 1;
+					else
+					{
+						fl += tz + 1;
+						tz = 0;
+					}
 				}
 				else if (ch == 'e' or ch == 'E')
 					state = ExponentSign;
@@ -469,7 +476,10 @@ std::from_chars_result from_chars(const char *first, const char *last, FloatType
 
 	if (not (bool)result.ec)
 	{
-		long double v = f * vi * sign;
+		while (tz-- > 0)
+			vi /= 10;
+
+		long double v = std::pow(10, -fl) * vi * sign;
 		if (exponent != 0)
 			v *= std::pow(10, exponent * exponent_sign);
 

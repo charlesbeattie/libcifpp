@@ -50,6 +50,32 @@ cif::file operator""_cf(const char *text, std::size_t length)
 
 // --------------------------------------------------------------------
 
+TEST_CASE("from_chars_1")
+{
+auto f = R"(data_TEST
+#
+loop_
+_test.v
+616.487
+616.487000
+    )"_cf;
+
+	auto &db = f.front();
+	auto &c = db.front();
+
+	auto r1 = c.front();
+	REQUIRE(r1.get<double>("v") == 616.487);
+	REQUIRE(r1["v"].compare(616.487) == 0);
+
+	auto r2 = c.back();
+	REQUIRE(r2.get<double>("v") == 616.487);
+	REQUIRE(r2["v"].compare(616.487) == 0);
+
+
+}
+
+// --------------------------------------------------------------------
+
 TEST_CASE("id_1")
 {
 	REQUIRE(cif::cif_id_for_number(0) == "A");

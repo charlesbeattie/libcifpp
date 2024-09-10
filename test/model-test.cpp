@@ -163,10 +163,10 @@ _atom_type.symbol   C
 
 	if (not(expected.front() == structure.get_datablock()))
 	{
-		REQUIRE(false);
-		std::cout << expected.front() << '\n'
+		std::cerr << expected.front() << '\n'
 				  << '\n'
 				  << structure.get_datablock() << '\n';
+		REQUIRE(false);
 	}
 }
 
